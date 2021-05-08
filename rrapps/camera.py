@@ -29,3 +29,4 @@ while True:
       cmd2 = 'convert ' + filename + ' -resize 640 ' + filenameSmall 
       pid = subprocess.call(cmd2, shell=True)
       print filename
+      time.sleep(60)
