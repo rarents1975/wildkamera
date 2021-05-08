@@ -15,7 +15,11 @@ LED
 
 ### WLAN Hotspot einrichten
 
-### Webserver installieren und konfigurieren
+### Webserver installieren und konfigurieren (inkl. favicons)
+
+#### Favicons
+
+#### config.txt anpassen
 
 ### Web-Frontend installieren
 
