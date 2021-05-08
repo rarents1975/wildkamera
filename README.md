@@ -15,7 +15,7 @@ LED
 
 ### WLAN Hotspot einrichten
 
-### Webserver installieren
+### Webserver installieren und konfigurieren
 
 ### Web-Frontend installieren
 
