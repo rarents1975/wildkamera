@@ -13,7 +13,7 @@ Taster
 LED  
 
 ## Hardware & Verkabelung
-Die Hardware wird wie auf dem Schaubild verkabelt. Darauf achten, daß die gpios aus der Abbildung verwendet werden, ansonsten müssen die python Scripte entsprechend angepasst werden. 
+Die Hardware wird wie auf dem Schaubild verkabelt. Darauf achten, daß die gpios aus der Abbildung verwendet werden, ansonsten müssen die [python Scripte] (https://github.com/rarents1975/wildkamera/tree/main/rrapps)  entsprechend angepasst werden. 
 
 ![alt text](https://github.com/rarents1975/wildkamera/blob/main/verkabelung.jpg)
 
