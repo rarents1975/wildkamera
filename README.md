@@ -24,7 +24,7 @@ Als user pi auf der Console anmelden und folgende Befehle ausführen:
 `cd`  
 `mkdir /home/pi/rrapps`  
 `sudo mkdir /video_recordings/dev`  
-Jetzt dem Verzeichnis für die Bilder dem user des Web Servers (www-data) entsprechende Lese- und Schreibberechtigungen vergeben:  
+Jetzt im Verzeichnis für die Bilder dem user des Web Servers (www-data) entsprechende Lese- und Schreibberechtigungen vergeben:  
 `sudo chwon -R www-data:www-data /video_recordings/dev` 
 
 ### WLAN Hotspot einrichten
