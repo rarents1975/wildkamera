@@ -83,11 +83,18 @@ Anschliessend im Browser Ergebniss checken.
 
 #### config.txt anpassen
 
-### Web-Frontend installieren
+### Web-Frontend installieren  
 
-### Stromverbrauch optimieren (bei Akkubetrieb)
+### Eigenes WLAN Netzwerk für den Raspberry Pi einrichten:  
+https://intux.de/2019/12/eigenes-wlan-netzwerk-mit-dem-raspberry-pi-realisieren/
 
-### Konfiguration der rc.local mit den Scripten die beim Systemstart automatisch gestartet werden
+### Stromverbrauch optimieren (bei Akkubetrieb)  
+Anleitung siehe auch unter: (https://elektro.turanis.de/html/prj298/index.html)  
+
+### Konfiguration der rc.local mit den Scripten die beim Systemstart automatisch gestartet werden  
+sudo nano /etc/rc.local  
+in /etc/rc.local folgende Eintragung vornehhmen:  
+
 
 
 
