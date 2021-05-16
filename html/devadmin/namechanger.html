@@ -1,0 +1,191 @@
+<?php
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'aufztitel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$scheduler=$obj->{'scheduler'};
+$schnittfunktion=$obj->{'schnittfunktion'};
+$streamlocation=$obj->{'streamlocation'};
+$scrolling=$obj->{'scrolling'};
+$youtubeadmin=$obj->{'youtubeadmin'};
+$adminpw=$obj->{'adminpw'};
+
+// flv-Dateiname entgegennehmen und aufsplitten:
+$dateiname=$_GET["filename"];
+
+//Spiltten des Dateinamens
+$teile = explode("-", $dateiname);
+
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+ <head>
+<?
+// Browser Cache verhindern
+php session_cache_limiter('nocache');
+?>
+        <title>Aufzeichnungsdatum &auml;ndern</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <style>
+        * {
+           box-sizing: border-box;
+        }
+
+        body {
+         margin: 0;
+        }
+
+        /* Style the header */
+        .header {
+            background-color: #f1f1f1;
+            padding: 10px;
+            font-size:100%;
+        }
+
+        /* Style the content */
+        .content {
+            background-color: #ddd;
+            padding: 10px;
+            font-size:80%;
+        }
+
+        /* Style the footer */
+        .footer {
+            background-color: #f1f1f1;
+            padding: 5px;
+        }
+        </style>
+
+        </head>
+	<body>
+
+
+        <div class="header">
+        <h2>Aufzeichnungsdatum &auml;ndern</h2>
+
+        <div class="content">
+
+<div class="w3-panel w3-border-left w3-border-blue w3-pale-blue">
+&Uuml;ber diese Funktionailit&auml;t kann einer bestehenden Aufnahme ein neues Datum und eine neue Uhrzeit zugeordnet werden.<BR>
+Die bestehende Aufnahme wird kopiert u. mit neuem Datum/neuer Uhrzeit abgelegt. Sie m&uuml;ssen anschl. &uuml;ber die &Uuml;bersichtsseite<br>
+noch eine mp4-Datei erzeugen und die alte Aufnahme l&ouml;schen.
+</div>
+
+<form name="herkunft" action="<?=$_SERVER['PHP_SELF']?>" method="post">
+
+<?php
+   $unique_id = uniqid(microtime(),1); 
+?>
+<table border="0">
+ <tr>
+  <td>Neues Datum: </td>
+<td><input placeholder="dd.mm.yyyy" type="text" id="zieldatum" name="datum" size="10" maxlength="10" pattern="(((?=.*[0-9]).{2})+.)+(((?=.*[0-9]).{2})+.)+(((?=.*[0-9]).{4}))" title="dd.mm.yyyy"/>
+<input type="hidden" name="unique_id" value="<?php echo $unique_id; ?>"></td>
+  <td><font size="2">Datum, zu dem die Aufzeichnung auf der <a href="./index.php">&Uuml;bersichtsseite</a> erscheinen soll.<br><i>Beispiel: 10.01.2021</i></font></td>
+ </tr>
+ <tr>
+  <td>Neue Startzeit: </td>
+  <td><input placeholder="hh:mm" type="text" id="endzeit" name="zeit" size="5" maxlength="5" pattern="(((?=.*[0-9]).{2})+:)+(((?=.*[0-9]).{2}))" title="hh:mm"/>
+<input type="hidden" name="dateiname" value="<?php echo $dateiname; ?>"></td>
+  <td><font size="2">Uhrzeit (Startzeit), zu welcher die Aufzeichnung auf der <a href="./index.php">&Uuml;bersichtsseite</a> erscheinen soll.<br><i>Beispiel: 10:00</i></font></td>
+ </tr>
+ <tr>
+  <td></td>
+  <td><input type="submit" name="submit" value="&Uuml;bernehmen" /></td>
+  <td>&nbsp;</td>
+ </tr>
+</table>
+</form>
+
+</body>
+</html>
+
+<?php
+        if(isset($_POST['submit']))
+        {
+                $datum = $_POST['datum'];
+                //echo "Datum: ".$datum."<br>";
+                $filename = $_POST['dateiname'];
+                //echo "Dateiname (ubergeben): ".$filename."<br>";
+
+                //Datumsformat vom Deutschen ins Englische konvertieren
+                //$datum = date("d.m.Y",$jetzt);
+                $tag = substr("$datum", 0,2);    //Tag
+                $monat = substr("$datum", 3,2);  //Monat
+                $jahr = substr("$datum", -2);    // Jahr
+                $datumNeu = "$tag-$monat-$jahr"; 
+                //echo "Datum (engl. Format): ".$datumNeu."<br>";
+                $zeit = $_POST['zeit'];
+                // Doppelpunkt durch - ersetzen in Zeit
+                $zeitNeu = str_replace(":","-",$zeit);
+
+                //Spiltten des Dateinamens
+                $teile = explode("-", $filename);
+                $key=$teile[0];
+                $nummer=$teile[1];
+                //echo "Streamkey: ".$key."<br>";
+                //echo "Streamnummer: ".$nummer."<br>";
+
+                // Wochentag aus Datum berechnen
+                $wochentage = array("Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag");
+                $timestamp = strtotime($datum);
+                //echo "Wochentag: ".$wochentage[date("w", $timestamp)]."<br>";
+
+                //if(!empty($datum) || (!empty($zeit))
+
+                if( (!empty($datum)) AND (!empty($zeit)) )
+                {
+                        // Wochentag anhand des gewuenschten Zieldatums ermitteln
+                        $tagNeu=$wochentage[date("w", $timestamp)];
+                       
+                        //Dateiname wieder zusammenbauen: 11223344-1609498789-Friday-01-01-21-10-59.flv                         
+                        //echo "nummer: ".$nummer."<br>";
+                        //Streamnummer um 1 erhoehen
+                        $nummerNeu=($nummer+1);
+                        //echo "NummerNeu: ".$nummerNeu."<br>";
+
+                        // Tag uebersetzen
+                        if ($tagNeu == "Montag") { $tagEn = "Monday"; }
+                        if ($tagNeu == "Dienstag") { $tagEn = "Tuesday"; }
+                        if ($tagNeu == "Mittwoch") { $tagEn = "Wednesday"; }
+                        if ($tagNeu == "Donnerstag") { $tagEn = "Thursday"; }
+                        if ($tagNeu == "Freitag") { $tagEn = "Friday"; }
+                        if ($tagNeu == "Samstag") { $tagEn = "Saturday"; }
+                        if ($tagNeu == "Sonntag") { $tagEn = "Sunday"; }
+
+                        //echo "Wochentag (engl.): ".$tagEn."<br>";
+
+                        $filenameNeu=$key."-".$nummerNeu."-".$tagEn."-".$datumNeu."-".$zeitNeu.".flv";
+                        //echo "filename: ".$filename."<br>";
+                        //echo "Neuer Dateiname :".$filenameNeu."<br>";
+
+                        //System Call auf Script ausfuehren, das die Aenderung vornimmt:
+                        $aufruf="/bin/bash /usr/local/nginx/html/rksutil/namechanger/namechanger.sh ".$ort." ".$filename.".flv ".$filenameNeu." ".$zeit;
+                        //echo "<br>Scriptaufruf: ".$aufruf."<br>";
+                        echo"<div class=\"w3-panel w3-border-left w3-border-green w3-pale-green\">";
+                        $last_line = system("/bin/bash /usr/local/nginx/html/rksutil/namechanger/namechanger.sh ".$ort." ".$filename.".flv ".$filenameNeu, $retval);
+                        //$last_line = system($aufruf, $retval);
+                        //sleep(1);
+                        echo "<h4>Zur&uuml;ck zur <a href=\"./index.php\">&Uuml;bersichtsseite</a></h4>";                     
+                        echo "</div>";
+                        //sleep(3);
+                        //header( 'Location: http://'.$server.'/'.$ort.'admin/index.php' ) ;
+
+                } else {
+                        echo"<div class=\"w3-panel w3-border-left w3-border-red w3-pale-red\">";
+                        echo "<p>Bitte ein neues Datum und eine neue Startzeit f&uuml;r den Stream eingeben!</p></div>";
+                }
+   
+        }
+?>

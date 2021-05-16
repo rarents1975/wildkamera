@@ -1,0 +1,130 @@
+<!-- Dieses Script startet den flowplayer Audio Player, so dass der Live-Audiostream aus einer HTML-Seite heraus 
+gestartet werden kann.
+-->
+
+<?php
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("../devadmin/config.txt");
+$obj = json_decode($json);
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+
+?>
+
+<!doctype html>
+
+<html>
+
+<head>
+   <meta charset="utf-8">
+
+      <title><?php echo $titel ?></title>
+   
+   <!-- optimize mobile versions -->
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+      <!-- Flowplayer skin -->
+   <link rel="stylesheet" href="../flowplayer/7.2.7/skin/skin.css">
+   
+   <!-- Minimal styling for this standalone page, can be removed -->
+   <!-- link rel="stylesheet" href="//demos.flowplayer.com/media/css/demo.css" -->
+   <!-- Syntax highlighting of source code, can be removed -->
+   <!-- link rel="stylesheet" href="//demos.flowplayer.com/media/css/pygments.css" -->
+      <!-- Specific stylesheet for this demo -->
+   <!-- link rel="stylesheet" href="//releases.flowplayer.org/audio/flowplayer.audio.css" -->
+  <link rel="stylesheet" href="../flowplayer/audio/flowplayer.audio.css">
+
+   
+<style>
+
+/* icecast player */
+.flowplayer.is-audio-only {
+  max-width: 400px;
+  background-color: #eee;
+}
+/* keep this controlbar-only player always at same height */
+.flowplayer.is-audio-only.is-small,
+.flowplayer.is-audio-only.is-tiny {
+  font-size: 16px;
+}
+</style>
+
+      <!-- Flowplayer depends on jquery 1.7.2+ for video tag based installations -->
+   <!-- script src="//code.jquery.com/jquery-1.12.4.min.js"></script -->
+   <script src="../flowplayer/tt/jquery-1.12.4.min.js"></script>
+
+         <!-- Flowplayer library -->
+   <!script src="//releases.flowplayer.org/7.2.4/flowplayer.min.js"></script -->
+   <script src="../flowplayer/7.2.7/flowplayer.min.js"></script>
+
+         <!-- The hlsjs plugin (light) for playback of HLS without Flash in modern browsers -->
+   <!-- script src="//releases.flowplayer.org/hlsjs/flowplayer.hlsjs.light.min.js"></script -->
+   <script src="../flowplayer/7.2.7/flowplayer.hlsjs.light.min.js"></script>
+  
+             
+      <!-- Specific script for this player -->
+   <!-- script src="//releases.flowplayer.org/audio/flowplayer.audio.min.js"></script -->
+   <script src="../flowplayer/audio/flowplayer.audio.min.js"></script>
+   
+<script>
+window.onload = function () {
+
+  var icecastContainer = document.getElementById("icecast"),
+      icecastSources = [
+        // native HLS support accepts icecast source
+
+       { type: "audio/mpeg", engine: "html5",
+          src: "http://<?php echo $server.":5000/church/".$ort ?>" }
+      ];
+
+  // icecast streams are not delivered with mime-type
+  // remove HTML5 media sources for IE < 12
+  if (flowplayer.support.browser.msie || navigator.userAgent.indexOf("Trident/7") > -1) {
+    icecastSources.splice(0, 2);
+  }
+
+  flowplayer(icecastContainer, {
+    live: true,
+    splash: true,
+    audioOnly: true,
+    clip: {
+      sources: icecastSources
+    }
+
+  }).on("ready error", function (e, api, arg) {
+    document.getElementById("icecast-info").innerHTML = arg.src
+        ? ("")
+        : arg.message;
+
+  }).on("progress.android", function (e, api) {
+    // *if* Android plays it, it botches up duration initially, overwrite
+    if (api.video.time < 4) {
+      icecastContainer.querySelector(".fp-duration").innerHTML = "Live";
+    } else {
+      api.off("progress.android");
+    }
+  });
+
+};
+</script>
+
+</head>
+
+<body>
+
+      <h1><?php echo $titel ?></h1>
+      <h2>Live Audio Stream</h2>
+
+<div id="icecast" class="fp-playful fp-edgy"></div>
+
+<p class="doc" id="icecast-info">&nbsp;</p>
+
+</body>
+
+</html>

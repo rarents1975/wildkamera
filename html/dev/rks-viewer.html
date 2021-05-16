@@ -1,0 +1,349 @@
+<!-- Dieses Script gibt den Livestream sowie alle Aufzeichnungen in einer HTML Seite aus, die speziell fuer den rks viewer 
+erstellt wurde.
+
+Voraussetzungen1:
+----------------
+/videorecordings/dev		=> Dorthin werden die Aufzeichnungen abgespeichert
+
+-->
+
+<?php 
+
+// Konfigurationsdatei fuer Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("../devadmin/config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$scheduler=$obj->{'scheduler'};
+$schnittfunktion=$obj->{'schnittfunktion'};
+$streamlocation=$obj->{'streamlocation'};
+$scrolling=$obj->{'scrolling'};
+$audiodownload=$obj->{'audiodownload'};
+$audioaufzeichnung=$obj->{'audioaufzeichnung'};
+$youtube=$obj->{'youtube'};
+$youtubekey=$obj->{'youtubekey'};
+
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><?php echo $titel ?></title>
+<meta charset="utf-8">
+<? 
+// Browser Cache verhindern
+php session_cache_limiter('nocache');
+?>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title><?php echo $titel ?></title>
+  <link href="<?php echo $modus."://".$server ?>/video.js/video-js.css" rel="stylesheet" type="text/css"/>
+  <script src="<?php echo $modus."://".$server ?>/video.js/video.js"></script>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+/* Style the content */
+.content {
+    background-color: #ddd;
+    padding: 10px;
+    font-size:80%;
+}
+
+/* Style the footer */
+.footer {
+    background-color: #f1f1f1;
+    padding: 5px;
+}
+
+/* Links als Buttons und hoverable gestalten */
+a.speziell:link {
+  background-color: #f1f1f1;
+  color: black;
+  /* border: 2px solid green; */
+  padding: 5px 5px;
+  text-align: left;
+  text-decoration: none;
+  /* display: inline-block; */
+}
+
+a.speziell:visited {
+  background-color: #f1f1f1;
+  color: black;
+  /* border: 2px solid green; */
+  padding: 5px 5px;
+  text-align: left;
+  text-decoration: none;
+  /* display: inline-block; */
+}
+
+a.speziell:hover {
+  background-color: #ccc;
+  color: black;
+}
+
+a.speziell:active {
+  background-color: #ccc;
+  color: black;
+}
+
+/* Link zu Seite neu Laden gestalten */
+a.rspeziell:link {
+  background-color: #f1f1f1;
+  color: black;
+  /* border: 2px solid green; */
+  padding: 5px 5px;
+  text-align: left;
+  text-decoration: none;
+  /* display: inline-block; */
+}
+
+a.rspeziell:visited {
+  background-color: #f1f1f1;
+  color: black;
+  /* border: 2px solid green; */
+  padding: 5px 5px;
+  text-align: left;
+  text-decoration: none;
+  /* display: inline-block; */
+
+/* Button stylen */
+button{font-size:16px;margin:20px 10px;}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2><?php echo $titel ?></h2>
+
+<?php
+
+//Check, ob HLS Videostream verfuegbar ist
+ini_set('default_socket_timeout', 1);
+ //if(!$fp = @fopen("http://192.168.178.47/livedev/11223344/index.m3u8", "r")) {
+ if(!$fp = @fopen($modus."://".$server."/live".$ort."/".$streamkey."/index.m3u8", "r")) {
+    $streamstatus="streamdown";
+    } else {
+    $streamstatus="streamup";
+    fclose($fp);
+    }
+
+//Check ob der Infotext fuer den Mandanten eingeschaltet ist
+if ($scrolling=="on") {
+  $infotext = file_get_contents('../'.$ort.'admin/scroller/text.txt');
+  echo"<div class=\"w3-panel w3-border-left w3-border-green w3-pale-green\">";
+  echo"<b>Aktuelles: </b>$infotext";
+  echo "</div>";
+}
+
+?>
+
+<?php
+// Wenn youtube in config.txt an ist, dann Weiterleitung zu youtube channel
+if ($youtube=="on") {
+  echo"<a href=\"https://www.youtube.com/channel/".$youtubekey."/live\"><img src=\"./images/kirche-yt.jpg\" width=\"640\" height=\"360\"></a>";
+} else {
+  // Darstellung der HTML Seite im node.js auf dieser Seite
+
+
+  echo'<table border="0"><tr><td>';
+  echo"<video id=\"my_video\" class=\"video-js vjs-big-play-centered\" controls preload=\"auto\" autoplay=\"true\" ";
+
+      // Wenn Video nicht laeuft, Hintergrundbild mit "Sendepause Aufschrift" laden
+      if($streamstatus == "streamup") 
+      {
+       echo"width=\"640\" height=\"360\" poster=\"./images/kirche.jpg\" data-setup='{\"plugins\": {\"reloadSourceOnError\": {}}}' >\"; ";
+      } else {
+       echo"width=\"640\" height=\"360\" poster=\"./images/kirche-pause.jpg\" data-setup='{\"plugins\": {\"reloadSourceOnError\": {}}}' >\"; ";
+      }
+
+  echo"<source src=\"".$modus."://".$server."/".$streamname."/".$streamkey."/index.m3u8\" type=\"application/x-mpegurl\">";
+  echo"</video>";
+  echo"<input type=\"button\" value=\"Seite neu laden\" onclick=\"javascript:location.reload(true);\" />";
+  echo"<button class=\"create-error\">Video neu laden</button>";
+  echo'<button onclick="myFunction()">Anzeige in Youtube</button>';
+  echo'</td>';
+
+  echo'<script>
+    function myFunction() {';
+      echo "location.href = \"https://www.youtube.com/channel/".$youtubekey."/live\"";
+    echo'}
+  </script>';
+
+  // Dieses Script sorgt dafuer, daß der video.js Player keine Fehlermeldung ausgibt
+  echo"<script>";
+
+  echo"var player = videojs('my_video', {";
+    echo"errorDisplay: false, ";
+    echo"liveui: true, " ;
+    echo"responsive: true";
+  echo"});";
+
+  echo"</script>";
+}
+
+?>
+
+<p>
+
+<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td align="left" valign="top">
+<h4><b>Hinweise zur Bedienung</b></h4><p>
+<ul>
+<li>Livestream wird durch Klick auf die Mitte des Videos gestartet</li>
+<li>Vollbildmodus durch Doppelklick auf das Livestream-Video</li>
+<li>Vollbildmodus kann durch Doppelklick wieder verlassen werden</li>
+<li>Alternative Anzeige in Youtube m&ouml;glich (Button "Anzeige in Youtube")</li>
+</ul>
+
+</td>
+
+</tr>
+</table>
+</div>
+
+
+<div class="content">
+<br><h4>Aufzeichnungen</h4>
+
+<?php
+// Pfad zur aktuellsten Aufzeichnung festlegen und Lesen der Datei Informationen
+$aufzeichnung = "/video_recordings/".$ort."/aufzeichnung.mp4";
+# echo date("d.m.Y", filemtime($aufzeichnung));
+?>
+
+<?php 
+// Ein paar Festlegungen zur Formatierung treffen:
+$spaltenzahl = 4;
+$i=0;
+
+function byte_ausrechnen($byte) { 
+     
+    if($byte < 1024) { 
+        $ergebnis = round($byte, 2). ' Byte'; 
+    }elseif($byte >= 1024 and $byte < pow(1024, 2)) { 
+        $ergebnis = round($byte/1024, 2).' KByte'; 
+    }elseif($byte >= pow(1024, 2) and $byte < pow(1024, 3)) { 
+        $ergebnis = round($byte/pow(1024, 2), 2).' MByte'; 
+    }elseif($byte >= pow(1024, 3) and $byte < pow(1024, 4)) { 
+        $ergebnis = round($byte/pow(1024, 3), 2).' GByte'; 
+    }elseif($byte >= pow(1024, 4) and $byte < pow(1024, 5)) { 
+        $ergebnis = round($byte/pow(1024, 4), 2).' TByte'; 
+    }elseif($byte >= pow(1024, 5) and $byte < pow(1024, 6)) { 
+        $ergebnis = round($byte/pow(1024, 5), 2).' PByte'; 
+    }elseif($byte >= pow(1024, 6) and $byte < pow(1024, 7)) { 
+        $ergebnis = round($byte/pow(1024, 6), 2).' EByte'; 
+    } 
+
+return $ergebnis; 
+     
+}
+
+function wochentag($tag) { 
+     
+    if($tag=="Sunday") { 
+        $weekday = "Sonntag"; 
+    }elseif($tag=="Monday") { 
+       $weekday = "Montag"; 
+    }elseif($tag=="Tuesday") { 
+       $weekday = "Dienstag"; 
+    }elseif($tag=="Wednesday") { 
+       $weekday = "Mittwoch";
+    }elseif($tag=="Thursday") { 
+       $weekday = "Donnerstag";
+    }elseif($tag=="Friday") { 
+       $weekday = "Freitag";
+    }elseif($tag=="Saturday") { 
+       $weekday = "Samstag";
+    }
+
+return $weekday; 
+     
+}
+
+// Pfad zum Ordner mit allen Video-Aufzeichnungen 
+$ordner = "/video_recordings/".$ort; //auch komplette Pfade moeglich ($ordner = "download/files";)
+
+// Ordner auslesen und Array in Variable speichern
+$alledateien = scandir($ordner, 1); // Sortierung A-Z
+// Sortierung Z-A mit scandir($ordner, 1)               				
+
+ while(count($alledateien)%$spaltenzahl!=0)
+    {
+      array_push($alledateien,"&nbsp;");
+    } 
+
+echo "<table border=\"0\">\n<tr>";
+
+// Schleife um Array "$alledateien" aus scandir Funktion auszugeben
+// Einzeldateien werden dabei in der Variabel $datei abgelegt
+foreach ($alledateien as $datei) {
+
+	// Zusammentragen der Dateiinfo
+	$dateiinfo = pathinfo($ordner."/".$datei); 
+
+	// scandir liest alle Dateien im Ordner aus, zusätzlich noch "." , ".." als Ordner
+	// Nur echte Dateien anzeigen lassen und keine "Punkt" Ordner
+	// aufzeichnung.mp4 ist die aktuellste Aufzeichnung. Diese soll nicht in der Tabelle erscheinen
+	if ($datei != "." && $datei != ".."  && $datei != "aufzeichnung.mp4") {
+        if ($dateiinfo['extension'] == "flv") { 
+
+        // Dateigroesse der mp4-Dateien feststellen
+        $size = filesize($ordner."/".$dateiinfo['filename'].".mp4");
+
+        // Splitten des Dateinamens
+        $dateiname=$dateiinfo['filename'];
+        $teile = explode("-", $dateiname);
+        $tag=$teile[2];
+
+        // Nur Tabellenzeilen fuer Dateien erzeugen die groesser 0 KB sind
+        if($i % $spaltenzahl == 0 and $i != 0)
+        {
+	 echo "</tr>\n<tr>\n";
+        }
+         echo "<td align=\"center\"><a href=\"/".$ort."/showmpeg2.html?filename=".$dateiinfo['filename'].".mp4\">";
+         echo "<img src=\"".$modus."://".$server."/".$ort."streams/images/".$dateiinfo['filename'].".jpg\"\" title=\"Video  abspielen\"";
+         echo "width=\"300\" height=\"200\"></a>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>";
+         echo "<h4>".wochentag($tag).", ".$teile[3].".".$teile[4].".".$teile[5]."&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>".$teile[6].":".$teile[7]." bis ".date("H\:i", filemtime($ordner."/".$dateiinfo['basename']))."&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</h4><p></td>\n";
+         $i++;
+
+        }; // Ende if-Schleife fuer erste Abfrage	
+     }; // Ende if-Schleife fuer Datei Extension Abfrage
+ };
+?>     
+
+</tr></table>
+</div>
+<p>&nbsp;
+
+<!-- Einbinden  der Statistik fuer diese Seite -->
+<?php include "counter.php"; ?>
+
+<script src="./stopExecutionOnTimeout.js"></script>
+<script id="rendered-js">document.querySelector('.create-error').onclick = () => videojs.players.my_video.error({ code: 4 });</script>
+<!-- #sourceURL=pen.js -->
+
+</body>
+</html>

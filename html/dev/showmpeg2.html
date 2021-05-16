@@ -1,0 +1,86 @@
+<?php
+
+// Konfigurationsdatei fuer Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("../devadmin/config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title><?php echo $titel ?></title>
+  <link href="<?php echo $modus."://".$server ?>/video.js/video-js.css" rel="stylesheet" type="text/css"/>
+  <script src="<?php echo $modus."://".$server ?>/video.js/video.js"></script>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<style>
+  body {
+    margin: 0;
+  }
+
+  /* Style the header */
+  .header {
+      background-color: #f1f1f1;
+      padding: 10px;
+      font-size:100%;
+  }
+
+</style>
+
+</head>
+<body>
+   <div id="content">
+   <div class="header">
+   <input type="button" value="Zur&uuml;ck" onclick="javascript:history.back();">
+   </div>
+
+  <video-js
+    class="vjs-fluid vjs-big-play-centered"
+    controls autoplay
+    preload="auto"
+    poster="<?php echo $modus."://".$server."/".$ort."/images/kirche.jpg" ?>"
+  >
+    <source src="<?php echo $modus."://".$server."/".$ort ?>streams/<?php echo $_GET["filename"]; ?>" type="video/mp4">
+    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+  </video-js>
+
+  <script>
+    var vid = document.querySelector('video-js');
+    var player = videojs(vid, {responsive: true});
+    var tbody = document.querySelector('table tbody');
+
+    player.on('playerresize', function() {
+      var values = {
+        breakpoint: player.currentBreakpoint(),
+        className: player.el().className.match(/vjs-layout-([a-z\-]+)/)[0],
+        playerWidth: player.currentWidth()
+      };
+
+      videojs.log('playerresize', values);
+
+      var tr = document.createElement('tr');
+
+      tr.innerHTML = '<td>' +
+        values.className +
+        '</td><td>' +
+        values.playerWidth +
+        '</td>';
+
+      tbody.insertBefore(tr, tbody.firstChild);
+    });
+  </script>
+
+</div>
+</body>
+</html>

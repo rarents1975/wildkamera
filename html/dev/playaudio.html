@@ -1,0 +1,162 @@
+<!-- Dieses Script startet den flowplayer Audio Player, so dass der aufgezeichnete Audiostream aus einer HTML-Seite heraus 
+gestartet werden kann.
+-->
+
+<?php
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("../devadmin/config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+
+?>
+
+<!doctype html>
+
+<html>
+
+<head>
+   <meta charset="utf-8">
+
+      <title><?php echo $titel ?></title>
+
+   <!-- optimize mobile versions -->
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+      <!-- The "playful" skin - choose from: "functional.css", "minimalist.css", "playful.css" -->
+   <!-- link rel="stylesheet" href="//releases.flowplayer.org/6.0.5/skin/playful.css" -->
+   <link rel="stylesheet" href="../flowplayer/6.0.5/skin/playful.css">
+
+
+   <!-- Minimal styling for this standalone page -->
+   <!-- link rel="stylesheet" href="//demos.flowplayer.com/media/css/demo.css" -->
+   <link rel="stylesheet" href="../flowplayer/media/css/demo.css">
+
+      <!-- Specific stylesheet for this player -->
+   <!-- link rel="stylesheet" href="//releases.flowplayer.org/audio/flowplayer.audio.css" -->
+   <link rel="stylesheet" href="../flowplayer/audio/flowplayer.audio.css">
+
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+/* Style the content */
+.content {
+    background-color: #ddd;
+    padding: 10px;
+    font-size:80%;
+}
+
+/* Style the footer */
+.footer {
+    background-color: #f1f1f1;
+    padding: 5px;
+}
+
+/* mixed playlist player */
+/* make cover image fill container width */
+.is-audio.flowplayer .fp-player {
+  background-size: cover;          /* default: contain */
+  background-position: top center; /* default: center */
+}
+
+/* simple playlist styling */
+.flowplayer {
+   background-color: #ddd;
+   /* allow room for playlist buttons */
+   margin-bottom: 100px;
+}
+
+.flowplayer.is-ready .fp-next,
+.flowplayer.is-ready .fp-prev {
+   display: inline;
+}
+</style>
+   <!-- Flowplayer depends on jquery 1.7.2+ for video tag based installations -->
+   <!-- script src="//code.jquery.com/jquery-1.12.4.min.js"></script -->
+   <script src="../flowplayer/tt/jquery-1.12.4.min.js"></script>
+
+         <!-- Flowplayer library -->
+   <!script src="//releases.flowplayer.org/6.0.5/flowplayer.min.js"></script -->
+   <script src="../flowplayer/6.0.5/flowplayer.min.js"></script>
+
+         <!-- The hlsjs plugin (light) for playback of HLS without Flash in modern browsers -->
+   <!-- script src="//releases.flowplayer.org/hlsjs/flowplayer.hlsjs.light.min.js"></script -->
+   <script src="../flowplayer/7.2.7/flowplayer.hlsjs.light.min.js"></script>
+
+
+      <!-- Specific script for this player -->
+   <!-- script src="//releases.flowplayer.org/audio/flowplayer.audio.min.js"></script -->
+   <script src="../flowplayer/audio/flowplayer.audio.min.js"></script>
+
+<script>
+window.onload = function () {
+
+  flowplayer("#mixed", {
+    ratio: 9/16,
+    splash: true,
+
+    playlist: [{
+      audio: true,
+      coverImage: "./images/kirche.jpg",
+      sources: [
+        { type: "audio/mpeg", src: "//<?php echo $server."/".$ort ?>streams/<?php echo $_GET["filename"]; ?>" }
+      ]
+    },]
+  });
+};
+</script>
+
+<!-- Start Open Web Analytics Tracker -->
+<script type="text/javascript">
+//<![CDATA[
+var owa_baseUrl = '<?php echo $modus."://".$server."/owa/" ?>';
+var owa_cmds = owa_cmds || [];
+owa_cmds.push(['setSiteId', '4d1e8fbaae713a5d0d2d2fd3f12b2eca']);
+owa_cmds.push(['trackPageView']);
+owa_cmds.push(['trackClicks']);
+
+(function() {
+	var _owa = document.createElement('script'); _owa.type = 'text/javascript'; _owa.async = true;
+	owa_baseUrl = ('https:' == document.location.protocol ? window.owa_baseSecUrl || owa_baseUrl.replace(/http:/, 'https:') : owa_baseUrl );
+	_owa.src = owa_baseUrl + 'modules/base/js/owa.tracker-combined-min.js';
+	var _owa_s = document.getElementsByTagName('script')[0]; _owa_s.parentNode.insertBefore(_owa, _owa_s);
+}());
+//]]>
+</script>
+<!-- End Open Web Analytics Code -->
+
+</head>
+
+<body>
+
+   <div id="content">
+      <h1><?php echo $titel ?></h1>
+
+<h2>Audio Aufzeichnung</h2>
+
+<div id="mixed"></div>
+
+</body>
+</html>

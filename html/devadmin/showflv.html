@@ -1,0 +1,56 @@
+<?php 
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+
+?>
+
+<!doctype html>
+<head>
+  <title><?php echo $titel ?></title>
+<!doctype html>
+<head>
+  <title><?php echo $titel ?></title>
+  <link rel="stylesheet" href="../flowplayer/6.0.5/skin/minimalist.css">
+  <script src="../flowplayer/tt/jquery-1.11.2.min.js"></script>
+  <script src="../flowplayer/tt/flowplayer.min.js"></script>
+</head>
+
+<?php
+function get_browser_name($user_agent)
+{
+    if (strpos($user_agent, 'Opera') || strpos($user_agent, 'OPR/')) return 'Opera';
+    elseif (strpos($user_agent, 'Edge')) return 'Edge';
+    elseif (strpos($user_agent, 'Chrome')) return 'Chrome';
+    elseif (strpos($user_agent, 'Safari')) return 'Safari';
+    elseif (strpos($user_agent, 'Firefox')) return 'Firefox';
+    elseif (strpos($user_agent, 'MSIE') || strpos($user_agent, 'Trident/7')) return 'Internet Explorer';
+    
+    return 'Other';
+}
+
+$browser = get_browser_name($_SERVER['HTTP_USER_AGENT']);
+
+if ($browser=="Edge") {
+ header("Location: ".$modus."://".$server."/".$ort."/aufzeichnung-edge.html");
+}
+
+?>
+
+<body>
+  <div class="flowplayer">
+    <video autoplay data-title="Autoplay">
+    <video>
+      <source type="video/flash" src="//<?php echo $server."/".$ort ?>streams/<?php echo $_GET["filename"]; ?>">
+      </video>
+  </div>
+</body>

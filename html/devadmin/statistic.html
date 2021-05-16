@@ -1,0 +1,223 @@
+<?php 
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$statitel=$obj->{'statitel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$scheduler=$obj->{'scheduler'};
+$schnittfunktion=$obj->{'schnittfunktion'};
+$streamlocation=$obj->{'streamlocation'};
+$scrolling=$obj->{'scrolling'};
+$youtubeadmin=$obj->{'youtubeadmin'};
+$adminpw=$obj->{'adminpw'};
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<?
+// Browser Cache verhindern
+php session_cache_limiter('nocache');
+?>
+<meta http-equiv="refresh" content="120" />
+<title><?php echo $statitel ?></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+/* Style the content */
+.content {
+    background-color: #ddd;
+    padding: 10px;
+    font-size:80%;
+}
+/* Style the footer */
+.footer {
+    background-color: #f1f1f1;
+    padding: 5px;
+}
+</style>
+</head>
+ 
+<body>
+
+<?php
+
+$filea = "../".$ort."/counteraufz.txt";
+
+$dateihandlea = fopen($filea,"r");
+$zeilea = fgets($dateihandlea, 4096);
+
+// Erste Zeile der Datei einlesen u. nach dem Zeichen "||" trennen
+list($ha, $ga, $wa, $ma, $ja, $gesamta, $rekorda, $rekordtimea) = explode("||", $zeilea);
+
+// Jetzt innerhalb der neuen Variablen nach dem Zeichen ":" trennen
+list ($tagheutea, $heutea) = explode(":", $ha);
+list ($taggesterna, $gesterna) = explode(":", $ga);
+list ($nrwochea, $wochea) = explode(":", $wa);
+list ($monatzahla, $monata) = explode(":", $ma);
+list ($jahrzahla, $jahra) = explode(":", $ja);
+
+// Jetzt die Zeilen der Datei lesen und 1 abziehen, da erste Zeile nicht mitgezaehlt wird
+$anzahla = count(file($filea));
+$onlinea = $anzahla - 1;
+
+?>
+
+<?php
+
+$filem = "../".$ort."/countermpeg.txt";
+
+$dateihandlem = fopen($filem,"r");
+$zeilem = fgets($dateihandlem, 4096);
+
+// Erste Zeile der Datei einlesen u. nach dem Zeichen "||" trennen
+list($hm, $gm, $wm, $mm, $jm, $gesamtm, $rekordm, $rekordtimem) = explode("||", $zeilem);
+
+// Jetzt innerhalb der neuen Variablen nach dem Zeichen ":" trennen
+list ($tagheutem, $heutem) = explode(":", $hm);
+list ($taggesternm, $gesternm) = explode(":", $gm);
+list ($nrwochem, $wochem) = explode(":", $wm);
+list ($monatzahlm, $monatm) = explode(":", $mm);
+list ($jahrzahlm, $jahrm) = explode(":", $jm);
+
+// Jetzt die Zeilen der Datei lesen und 1 abziehen, da erste Zeile nicht mitgezaehlt wird
+$anzahlm = count(file($filem));
+$onlinem = $anzahlm - 1;
+
+?>
+
+<?php
+
+$file = "../".$ort."/counterlive.txt";
+
+$dateihandle = fopen($file,"r");
+$zeile = fgets($dateihandle, 4096);
+
+// Erste Zeile der Datei einlesen u. nach dem Zeichen "||" trennen
+list($h, $g, $w, $m, $j, $gesamt, $rekord, $rekordtime) = explode("||", $zeile);
+
+// Jetzt innerhalb der neuen Variablen nach dem Zeichen ":" trennen
+list ($tagheute, $heute) = explode(":", $h);
+list ($taggestern, $gestern) = explode(":", $g);
+list ($nrwoche, $woche) = explode(":", $w);
+list ($monatzahl, $monat) = explode(":", $m);
+list ($jahrzahl, $jahr) = explode(":", $j);
+
+// Jetzt die Zeilen der Datei lesen und 1 abziehen, da erste Zeile nicht mitgezaehlt wird
+$anzahl = count(file($file));
+$online = $anzahl - 1;
+
+?>
+
+<?php
+
+$fileu = "../".$ort."/counter.txt";
+
+$dateihandleu = fopen($fileu,"r");
+$zeileu = fgets($dateihandleu, 4096);
+
+// Erste Zeile der Datei einlesen u. nach dem Zeichen "||" trennen
+list($hu, $gu, $wu, $mu, $ju, $gesamtu, $rekordu, $rekordtimeu) = explode("||", $zeileu);
+
+// Jetzt innerhalb der neuen Variablen nach dem Zeichen ":" trennen
+list ($tagheuteu, $heuteu) = explode(":", $hu);
+list ($taggesternu, $gesternu) = explode(":", $gu);
+list ($nrwocheu, $wocheu) = explode(":", $wu);
+list ($monatzahlu, $monatu) = explode(":", $mu);
+list ($jahrzahlu, $jahru) = explode(":", $ju);
+
+// Jetzt die Zeilen der Datei lesen und 1 abziehen, da erste Zeile nicht mitgezaehlt wird
+$anzahlu = count(file($fileu));
+$onlineu = $anzahlu - 1;
+
+?>
+
+<div class="header">
+  <h2><?php echo $statitel ?></h2>
+
+ <a href="../<?php echo $ort ?>admin/index.php"><img src="../images/home.png" title="Administrations-Oberfl&auml;che" width="25" height="25"></a>&nbsp; <a href="../<?php echo $ort ?>admin/index.php">Administrations-Oberfl&auml;che</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<?php 
+if ($scheduler=="on") {
+     echo "<a href=\"./aufnahme.html\"><img src=\"../images/calendar.png\" title=\"Aufzeichnung programmieren\" width=\"20\" height=\"20\"></a>&nbsp; <a href=\"./aufnahme.html\">Aufnahmen planen</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+}
+?>
+
+<?php 
+if ($scrolling=="on") {
+  echo "<a href=\"./scroller.html\"><img src=\"../images/scrolling.png\" title=\"Lauftext einrichten\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./scroller.html\">Lauftext</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+}
+?>
+
+<?php 
+if ($adminpw=="on") {
+  echo "<a href=\"./modifyadmin.html\"><img src=\"../images/admin.png\" title=\"Admin Passwort &auml;ndern\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./modifyadmin.html\">Passwort</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+}
+?>
+
+<?php 
+if ($youtubeadmin=="on") {
+  echo "<a href=\"./config.html\"><img src=\"../images/youtube.png\" title=\"Youtube Weiterleitung konfigurieren\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./config.html\">Youtube</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+}
+?>
+
+</div>
+
+<div class="content">
+<h4>Statistik:</h4>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small w3-hoverable w3-card-4 w3-left">
+<tr><th>Seite</th><th>Heute</th><th>Gestern</th><th>Woche</th><th>
+Monat</th><th>Jahr</th><th>Gesamt</th><th>Rekord</th></tr></b>
+<tr><td><a href="../<?php echo $ort ?>/livestream.html">Livestream-Seite</td><td><?php echo $heute ?></td>
+<td><?php echo $gestern ?></td><td><?php echo $woche ?>
+</td><td><?php echo $monat ?></td><td><?php echo $jahr ?></td><td><?php echo $gesamt ?></td><td>
+<?php echo $rekord ?> (<?php echo date("d.m.Y", $rekordtime) ?>)</td></tr>
+
+<tr><td><a href="../<?php echo $ort ?>/index.php">&Uuml;bersichts-Seite</td><td><?php echo $heuteu ?></td>
+<td><?php echo $gesternu ?></td><td><?php echo  $wocheu ?>
+</td><td><?php echo $monatu ?></td><td><?php echo $jahru ?></td><td><?php echo $gesamtu ?></td><td>
+<?php echo $rekordu ?> (<?php echo date("d.m.Y", $rekordtimeu) ?>)</td></tr>
+
+<tr><td><a href="../<?php echo $ort ?>/aufzeichnung.html">Aufruf der letzten Aufzeichnung</td><td><?php echo $heutea ?></td>
+<td><?php echo $gesterna ?></td><td><?php echo  $wochea ?>
+</td><td><?php echo $monata ?></td><td><?php echo $jahra ?></td><td><?php echo $gesamta ?></td><td>
+<?php echo $rekorda ?> (<?php echo date("d.m.Y", $rekordtimea) ?>)</td></tr>
+
+<tr><td><a href="../<?php echo $ort ?>/index.php">Aufruf von Aufzeichnungen (mp4) </td><td><?php echo $heutem ?></td>
+<td><?php echo $gesternm ?></td><td><?php echo  $wochem ?>
+</td><td><?php echo $monatm ?></td><td><?php echo $jahrm ?></td><td><?php echo $gesamtm ?></td><td>
+<?php echo $rekordm ?> (<?php echo date("d.m.Y", $rekordtimem) ?>)</td></tr>
+</table></div><p>
+
+<h4><b><font color="blue">NEU: </font></b><a href="./statisticnew.html">Tagesaktuelle Statistik</a><h4><p>
+
+<?php 
+exec("/bin/bash /usr/local/nginx/html/rksutil/statistik/STARTSTAT.sh $ort");
+?>
+
+</body>

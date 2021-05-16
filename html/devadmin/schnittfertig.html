@@ -1,0 +1,212 @@
+<?php 
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+
+if ((empty ($_GET['anfang']) == TRUE) 
+   && (empty ($_GET['ende']) == TRUE)
+   && (empty ($_GET['von1']) == TRUE)
+   && (empty ($_GET['bis1']) == TRUE)
+   && (empty ($_GET['von2']) == TRUE)
+   && (empty ($_GET['bis2']) == TRUE)
+   && (empty ($_GET['von3']) == TRUE)
+   && (empty ($_GET['bis3']) == TRUE))
+{
+
+#Formularfelder auslesen
+$dateiname = $_GET['dateiname'];
+
+# aus dateiname.flv dateiname ohne Endung .flv machen
+$teiledateiname = explode(".", $dateiname);
+$datei = $teiledateiname [0];
+
+header("Location: ".$modus."://".$server."/".$ort."admin/schnitt.html?filename=$datei&message=leer");
+
+exit;
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title><?php echo $titel ?></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+/* Style the content */
+.content {
+    background-color: #ddd;
+    padding: 10px;
+    font-size:80%;
+}
+
+/* Style the footer */
+.footer {
+    background-color: #f1f1f1;
+    padding: 5px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2><?php echo $titel ?></h2>
+  <h3>Video schneiden</h3>
+  <a href="../<?php echo $ort ?>admin/index.php"><img src="../images/home.png" title="Administrations-Oberfl&auml;che" width="25" height="25"></a>&nbsp; <a href="../<?php echo $ort ?>admin/index.php">Administrations-Oberfl&auml;che</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="./statistic.html"><img src="../images/statistic.png" title="Statistic" width="20" height="20"></a>&nbsp; <a href="./statistic.html">Statistik</a><p>
+</div>
+<div class="content">
+
+
+<?php
+
+#Ueberprufen, ob ffmpeg Konvertierung nach mp4 laeuft. Wenn ja, keine weiteren Links fuer die Konvertierung anzeigen
+
+$pid=exec("pidof avconv");
+exec("ps -p $pid", $output);
+
+if (count($output) > 1) {
+ echo "<font color='green'><b>Videoschnitt wird momentan erzeugt - daher sind momentan keine weiteren Schnittvorg&auml;nge m&ouml;glich.<br>
+Bitte einige Minuten warten und anschl. Browserseite neu laden.
+</b></font><p>";
+ $mpegcreation="running";
+}
+else {
+ $mpegcreation="notrunning";
+}
+
+#Formularfelder auslesen
+$dateiname = $_GET['dateiname'];
+$anfang = $_GET['anfang'];
+$ende = $_GET['ende'];
+$von1 = $_GET['von1'];
+$bis1 = $_GET['bis1'];
+$von2 = $_GET['von2'];
+$bis2 = $_GET['bis2'];
+$von3 = $_GET['von3'];
+$bis3 = $_GET['bis3'];
+
+
+#echo "dateiname: ".$dateiname."<br>";
+#echo "anfang: ".$anfang."<br>";
+#echo "ende: ".$ende."<br><br><br>";
+
+# Umrechnen der Zeiten von hh:mm:ss in Sekunden
+$teileanfang = explode(":", $anfang);
+$anfangsec = (($teileanfang[0]*60*60)+($teileanfang[1]*60)+$teileanfang[2]);
+if ($anfangsec == "0" or $anfangsec == "")
+   {
+   $anfangsec ="0";
+   }
+$teileende = explode(":", $ende);
+$endesec = (($teileende[0]*60*60)+($teileende[1]*60)+$teileende[2]);
+if ($endesec == "0" or $endesec == "")
+   {
+   $endesec ="0";
+   }
+
+$teilevon1 = explode(":", $von1);
+$von1sec = (($teilevon1[0]*60*60)+($teilevon1[1]*60)+$teilevon1[2]);
+if ($von1sec == "0" or $von1sec == "")
+   {
+   $von1sec ="0";
+   }
+$teilebis1 = explode(":", $bis1);
+$bis1sec = (($teilebis1[0]*60*60)+($teilebis1[1]*60)+$teilebis1[2]);
+if ($bis1sec == "0" or $bis1sec == "")
+   {
+   $bis1sec ="0";
+   }
+
+$teilevon2 = explode(":", $von2);
+$von2sec = (($teilevon2[0]*60*60)+($teilevon2[1]*60)+$teilevon2[2]);
+if ($von2sec == "0" or $von2sec == "")
+   {
+   $von2sec ="0";
+   }  
+$teilebis2 = explode(":", $bis2);
+$bis2sec = (($teilebis2[0]*60*60)+($teilebis2[1]*60)+$teilebis2[2]);
+if ($bis2sec == "0" or $bis2sec == "")
+   {
+   $bis2sec ="0";
+   }  
+
+$teilevon3 = explode(":", $von3);
+$von3sec = (($teilevon3[0]*60*60)+($teilevon3[1]*60)+$teilevon3[2]);
+if ($von3sec == "0" or $von3sec == "")
+   {
+   $von3sec ="0";
+   }  
+$teilebis3 = explode(":", $bis3);
+$bis3sec = (($teilebis3[0]*60*60)+($teilebis3[1]*60)+$teilebis3[2]);
+if ($bis3sec == "0" or $bis3sec == "")
+   {
+   $bis3sec ="0";
+   } 
+
+#echo "dateiname: ".$dateiname."<br>";
+#echo "anfangsec: ".$anfangsec."<br>"; 
+#echo "endesec: ".$endesec."<br>";
+#echo "von1sec: ".$von1sec."<br>";
+#echo "bis1sec: ".$bis1sec."<br>";
+#echo "von2sec: ".$von2sec."<br>";
+#echo "bis2sec: ".$bis2sec."<br>";
+#echo "von3sec: ".$von3sec."<br>";
+#echo "bis3sec: ".$bis3sec."<br>";
+
+#System Call ausfuehren:
+$last_line = system("/bin/bash /usr/local/nginx/html/".$ort."admin/beschnitt/startbeschnitt.sh $dateiname $anfangsec $endesec $von1sec $bis1sec $von2sec $bis2sec $von3sec $bis3sec", $retval);
+
+if ($last_line == "Fertig")
+   {
+   echo"<h5>Videoschnitt erfolgreich</h5>";
+   echo"Auf der Adminstrations&uuml;bersicht finden Sie das neu erstellte Video &uuml;berhalb der bearbeiteten Originalversion.<br>";
+   echo"<P>";
+   echo"<b>N&auml;chste Schritte:</b><br>";
+   echo"<ul><li>Erzeugung der mp4-Datei &uuml;ber den Link in der Spalte \"mp4 erzeugen\" auf der Administrations&uuml;bersicht<br>Damit wird das neue Video f&uuml;er alle sichtbar.</li>";
+   echo"<li>L&ouml;schen der Originalversion &uuml;ber den Link in der Spalte \"Aufzeichnung l&ouml;schen\" auf der Administrations&uuml;bersicht</li></ul>";
+   echo"<a href=\"./index.php\">Zur Administrations&uuml;bersicht</a>";
+   // mp4 erzeugen
+   // zur Uebersichtsseite
+} elseif ($last_line == "ERROR-Unsinnige-Vorgabe")
+   {
+   echo"<h5>Video konnte nicht geschnitten werden</h5>";
+   echo"<b>M&ouml;gliche Gr&uuml;nde</b><br>";
+   echo"<ul><li>Eingabeparameter machen keinen Sinn (Beispiel: Schnittzeiten passen nicht zur Videol&auml;nge)</li>";
+   echo"<li>Ein Problem auf dem Server liegt vor.</li></ul>";
+   echo"<P>";
+   echo"<a href=\"javascript:history.back()\">Zur&uuml;ck zum Videoschnitt</a>&nbsp;  <a href=\"./index.php\">Zur&uuml;ck zur Administrations&uuml;bersicht</a>";
+} 
+
+?>
+
+<div class="footer">
+  <!-- p>Footer</p -->
+</div>
+
+</body></html>

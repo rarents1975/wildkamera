@@ -1,0 +1,54 @@
+<!-- Dieses Script gibt den Livevideostream in einer HTML Seite aus. Inkl. Hinweis auf Probleme mit dem IE und Edge Browser. -->
+
+<?php
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("../devadmin/config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'livetitel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$youtubekey=$obj->{'youtubekey'};
+?>
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+   <meta charset="utf-8">
+   <?php session_cache_limiter('nocache'); ?>
+   <title><?php echo $titel ?></title>   
+
+   <!-- optimize mobile versions -->
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+   <!-- Flowplayer skin -->
+   <link rel="stylesheet" href="../flowplayer/7.2.7/skin/skin.css">
+
+   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">   
+   <!-- Minimal styling for this standalone page, can be removed -->
+   <!-- link rel="stylesheet" href="http://demos.flowplayer.org/media/css/demo.css" -->
+   <!-- Syntax highlighting of source code, can be removed -->
+   <!-- link rel="stylesheet" href="http://demos.flowplayer.org/media/css/pygments.css" -->
+   
+<style>
+
+</head>
+
+<body>
+<?php 
+  include "./counterlive.php";
+  header("Status: 301 Moved Permanently"); 
+  //header("Location:https://youtu.be/fYN7zvMdzlA");
+  header("Location:https://www.youtube.com/channel/$youtubekey/live");
+  exit; 
+?>
+
+</body>
+</html>

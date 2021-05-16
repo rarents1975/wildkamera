@@ -1,0 +1,63 @@
+<?php
+
+// Konfigurationsdatei fuer Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("../devadmin/config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title><?php echo $titel ?></title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<style>
+  body {
+    margin: 0;
+  }
+
+  /* Style the header */
+  .header {
+      background-color: #f1f1f1;
+      padding: 10px;
+      font-size:100%;
+  }
+
+</style>
+</head>
+
+<?php 
+
+$streamcheck = system("curl --connect-timeout 1 -o --head --fail http://192.168.178.47/livedev/11223344", $streamstatus);
+if ($streamstatus == "22")
+   {
+echo" <body>
+   <div id=\"content\">
+   <div class=\"header\">
+   <h3>Sendepause</h3>
+   </div>
+
+</body>
+</html>";
+
+
+} elseif ($streamstatus == "23")
+   {
+   header("Location: http://192.168.178.47/dev/livestream2.html");
+   exit;
+}
+   
+
+?>
+

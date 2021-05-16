@@ -1,0 +1,282 @@
+<!-- Dieses Script gibt den Livevideostream in einer HTML Seite aus. Inkl. Hinweis auf Probleme mit dem IE und Edge Browser. -->
+
+<?php
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("../devadmin/config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'livetitel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+
+?>
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+   <meta charset="utf-8">
+   <?php session_cache_limiter('nocache'); ?>
+   <title><?php echo $titel ?></title>   
+
+   <!-- optimize mobile versions -->
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+   <!-- Flowplayer skin -->
+   <link rel="stylesheet" href="../flowplayer/7.2.7/skin/skin.css">
+
+   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">   
+   <!-- Minimal styling for this standalone page, can be removed -->
+   <!-- link rel="stylesheet" href="http://demos.flowplayer.org/media/css/demo.css" -->
+   <!-- Syntax highlighting of source code, can be removed -->
+   <!-- link rel="stylesheet" href="http://demos.flowplayer.org/media/css/pygments.css" -->
+   
+<style>
+
+.flowplayer {
+  live: true;
+  autoplay: true;
+  /* background: #00abcde; */
+  background-image: url(./images/kirche.jpg);
+}
+.flowplayer .fp-color-play {
+  fill: #eee;
+}
+ 
+/* customized error display and message */
+.flowplayer.is-offline .fp-controls,
+.flowplayer.is-offline .fp-play {
+  display: none !important;
+}
+.flowplayer.is-offline .fp-message {
+  color: transparent; /* hides engine prefix of message */
+  width: 100%;
+  height: 100%;
+  /* background-image: url(//rk-solutions-streamb.de/images/unterbrochen.jpg); */
+  text-align: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.flowplayer.is-offline .fp-message h3,
+.flowplayer.is-offline .fp-message p {
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0px 0px #fff
+}
+.flowplayer.is-offline .fp-message h3 {
+  margin-top: 15%;
+  font-size: 200%;
+}
+
+</style>
+
+<!-- Flowplayer library -->
+<script src="../flowplayer/7.2.7/flowplayer.min.js"></script>
+<!-- Flowplayer hlsjs engine (light) -->
+<!-- script src="../flowplayer/7.2.7/flowplayer.hlsjs.light.min.js"></script -->
+<script src="../flowplayer/7.2.7/flowplayer.hlsjs.light.min.js"></script>
+   
+<script>
+
+window.onload = function () {
+ 
+  var container = document.getElementById("live"),
+      player,
+      initialDelay = 10,
+      timer,
+      // clone default errors for customization
+      customErrors = flowplayer.defaults.errors.slice(0),
+      customError = "<h3>Sendepause</h3>",
+      // preload error image; case: user disconnects
+      errImage = new Image();
+ 
+  customErrors[2] = customError;
+  customErrors[4] = customError;
+ 
+  player = flowplayer(container, {
+    // use custom errors 2 and 4
+    errors: customErrors,
+    ratio: 9/16,
+    splash: true,
+    live: true,
+    share: false,
+    autoplay: true,
+    clip: {
+      hlsjs: {
+        xhrSetup: function (xhr, url) {
+          var isPlaylist = url.lastIndexOf(".m3u8") === url.length - 5;
+ 
+          xhr.addEventListener("error", function () {
+            if (isPlaylist) {
+              // intentionally throw Network error
+              player.trigger("error", [player, {code: 2}]);
+            }
+          });
+          xhr.addEventListener("readystatechange", function (e) {
+            var xstatus = e.currentTarget.status;
+            if (isPlaylist && xhr.readyState === 4 && xstatus >= 400 && xstatus < 499) {
+              // intentionally throw Video file not found error
+              player.trigger("error", [player, {code: 4}]);
+            }
+          });
+        }
+      },
+      flashls: {
+        // limit amount of retries to load hls manifests in Flash
+        manifestloadmaxretry: 2
+      },
+      live: true,
+      autoplay: true,
+      sources: [
+        { type: "application/x-mpegurl",
+          src:  "<?php echo "".$modus."://".$server."/".$streamname."/".$streamkey ?>/index.m3u8" }
+      ]
+    }
+ 
+  }).on("error", function (e, api, err) {
+    var delay = initialDelay;
+ 
+    clearInterval(timer);
+ 
+    if (err.code === 2 || err.code === 4) {
+      container.className += " is-offline";
+ 
+      if (flowplayer.support.flashVideo) {
+        api.one("flashdisabled", function () {
+          container.querySelector(".fp-flash-disabled").style.display = "none";
+        });
+      }
+ 
+      timer = setInterval(function () {
+        var messageElement = container.querySelector(".fp-ui .fp-message");
+ 
+        delay -= 1;
+ 
+        if (delay && messageElement) {
+          messageElement.querySelector("span").innerHTML = delay;
+          // only for disconnected user:
+          messageElement.style.backgroundImage = "url(" + errImage.src + ")";
+        } else {
+          clearInterval(timer);
+          api.error = api.loading = false;
+          if (messageElement) {
+            container.querySelector(".fp-ui").removeChild(messageElement);
+          }
+          container.className = container.className.replace(/\bis-(error|offline)\b/g, "");
+          api.load();
+        }
+ 
+      }, 1000);
+    }
+ 
+  });
+ 
+  // preload error image in case of network timeouts
+  errImage.src = "//demos.flowplayer.com/media/img/interruption.png";
+ 
+
+  /*
+   * the following is for demo purposes and simulation only
+   * do not use in production!
+   */
+ 
+  var buttons = document.getElementsByTagName("button"),
+      i;
+ 
+  for (i = 0; i < buttons.length; i += 1) {
+    buttons[i].onclick = function () {
+      var errorstream = !this.id
+          ? null
+          : this.id === "dummy"
+            ? "//edge.flowplayer.org/dummy-live.m3u8"
+            : "//edge.flowplayer.org/non-existent.m3u8";
+ 
+      if (player.error) {
+        // clean retry
+        player.error = player.loading = false;
+        container.className = container.className.replace(/\bis-offline\b/, "");
+        container.className = container.className.replace(/\bis-error\b/, "");
+      }
+ 
+      if (errorstream) {
+        player.load({
+          sources: [
+            { type: "application/x-mpegurl", src: errorstream }
+          ]
+        });
+      } else {
+        player.load(player.conf.clip);
+      }
+    };
+  }
+ 
+};
+
+</script>
+
+<!-- Start Open Web Analytics Tracker -->
+<script type="text/javascript">
+//<![CDATA[
+var owa_baseUrl = '<?php echo $modus."://".$server."/owa/" ?>';
+var owa_cmds = owa_cmds || [];
+owa_cmds.push(['setSiteId', '4d1e8fbaae713a5d0d2d2fd3f12b2eca']);
+owa_cmds.push(['trackPageView']);
+owa_cmds.push(['trackClicks']);
+
+(function() {
+	var _owa = document.createElement('script'); _owa.type = 'text/javascript'; _owa.async = true;
+	owa_baseUrl = ('https:' == document.location.protocol ? window.owa_baseSecUrl || owa_baseUrl.replace(/http:/, 'https:') : owa_baseUrl );
+	_owa.src = owa_baseUrl + 'modules/base/js/owa.tracker-combined-min.js';
+	var _owa_s = document.getElementsByTagName('script')[0]; _owa_s.parentNode.insertBefore(_owa, _owa_s);
+}());
+//]]>
+</script>
+<!-- End Open Web Analytics Code -->
+
+</head>
+
+<?php
+function get_browser_name($user_agent)
+{
+    if (strpos($user_agent, 'Opera') || strpos($user_agent, 'OPR/')) return 'Opera';
+    elseif (strpos($user_agent, 'Edge')) return 'Edge';
+    elseif (strpos($user_agent, 'Chrome')) return 'Chrome';
+    elseif (strpos($user_agent, 'Safari')) return 'Safari';
+    elseif (strpos($user_agent, 'Firefox')) return 'Firefox';
+    elseif (strpos($user_agent, 'MSIE') || strpos($user_agent, 'Trident/7')) return 'Internet Explorer';
+    
+    return 'Other';
+}
++
+$browser = get_browser_name($_SERVER['HTTP_USER_AGENT']);
+
+if ($browser=="Edge") {
+ header("Location: ".$modus."://".$server."/".$ort."/livestream-edge.html");
+}
+?>
+
+<?php include "./counterlive.php"; ?>
+
+<body>
+
+<div class="w3-panel w3-border-left w3-border-green w3-pale-green">
+Um den Ton einzuschalten klicken Sie auf die Striche/Punkte in der rechten unteren Bildschirmh&auml;lfte.<br>
+</div>
+
+<div id="live"></div>
+ 
+<!-- for demo purposes only -->
+<!-- div class="info">
+  <p><button id="dummy" type="button">Simulate dummy stream</button>
+  <button id="nonexistent" type="button">Simulate non existent stream</button>
+  <button type="button">Play configured stream</button></p>
+</div -->
+
+</body>
+</html>

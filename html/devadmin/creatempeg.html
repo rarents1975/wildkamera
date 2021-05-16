@@ -1,0 +1,97 @@
+<!-- Dieses Script erzeugt eine mp4sowie eine mp3 Datei und ein Vorschau jpg fuer den rks-viewer-->
+
+<?php
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$scheduler=$obj->{'scheduler'};
+$schnittfunktion=$obj->{'schnittfunktion'};
+$streamlocation=$obj->{'streamlocation'};
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>mp4 und mp3 Dateien werden erzeugt</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+/* Style the content */
+.content {
+    background-color: #ddd;
+    padding: 10px;
+    font-size:80%;
+}
+
+/* Style the footer */
+.footer {
+    background-color: #f1f1f1;
+    padding: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h3>mp4 und mp3 Formate der Aufnahme werden erzeugt...!</h3>
+</div>
+<div class="content">
+
+<?php
+
+//Pfade zu den Video Dateiordnern auf dem Server
+$dateimp4_path="/video_recordings/".$ort."/".$_GET["filename"].".mp4";
+$dateimp3_path="/video_recordings/".$ort."/".$_GET["filename"].".mp3";
+$dateiflv_path="/video_recordings/".$ort."/".$_GET["filename"].".flv";
+$dateiimg_path="/video_recordings/".$ort."/images/".$_GET["filename"].".jpg";
+
+//Pfad zum ffmpeg Konverter
+$ffmpeg_path="/home/rarents/bin/avconv";
+//Erzeugen des mp4 files
+exec("$ffmpeg_path -y -i $dateiflv_path -c copy -copyts $dateimp4_path >>/dev/null 2>&1 &");
+
+//Erzeugen des mp3 files
+exec("$ffmpeg_path -y -i $dateiflv_path -f mp3 -ab 160000 -acodec libmp3lame $dateimp3_path >>/dev/null 2>&1 &");
+
+//Erzeugen des jpg Vorschaubildes fuer den rks-viewer
+exec("$ffmpeg_path -ss 00:00:02 -i $dateiflv_path -c:v png -frames:v 1 -y $dateiimg_path >>/dev/null 2>&1 &");
+
+
+echo "<p>Dieser Vorgang kann bis zu 15 min. dauern (je nach Groesse der Aufzeichnung).<br>
+<ul>
+<li>Es kann immer nur ein Konvertierungsprozess laufen, daher sind alle weiteren Konvertierungen so lange gesperrt,<br>
+bis dieser Vorgang abgeschlossen ist.</li>
+<li>Sie werden in wenigen Sekunden automatisch zur Uebersichtsseite weitergeleitet.</li>
+</ul>";
+
+
+//Zurueck zur Uebersichtsseite
+echo '<meta http-equiv="refresh" content="2; url=index.php">';
+?>
+</body></html>

@@ -1,0 +1,1075 @@
+<!-- Ueber dieses Script koennen Vieoaufzeichnungstermine eigegeben werden. Der Raspi am Aufnahmeort holt die Zeiten dann ueber api.php 
+ab und startet die Aufnahmen automatisch.
+
+Voraussetzungen:
+----------------
+/api.php            => REST-API, ueber welche die Aufnahmen vom Raspi abgeholt werden
+/zeiten.txt	    => Textdatei, in welche die Aufnahmen gespeichert werden
+
+-->
+
+<?php 
+
+// Konfigurationsdatei fuer Irgendingen auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$scheduler=$obj->{'scheduler'};
+$schnittfunktion=$obj->{'schnittfunktion'};
+$streamlocation=$obj->{'streamlocation'};
+$scrolling=$obj->{'scrolling'};
+$youtubeadmin=$obj->{'youtubeadmin'};
+$adminpw=$obj->{'adminpw'};
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<?
+// Browser Cache verhindern
+php session_cache_limiter('nocache');
+?>
+<title><?php echo $titel ?></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="js/jquery.datetimepicker.min.css">
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+/* Style the content */
+.content {
+    background-color: #ddd;
+    padding: 10px;
+    font-size:80%;
+}
+
+/* Style the footer */
+.footer {
+    background-color: #f1f1f1;
+    padding: 5px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+  <h2><?php echo $titel ?></h2>
+  <h3>Aufnahmen planen</h3>
+
+  <a href="../<?php echo $ort ?>admin/index.php"><img src="../images/home.png" title="Administrations-Oberfl&auml;che" width="25" height="25"></a>&nbsp; <a href="../<?php echo $ort ?>admin/index.php">Administrations-Oberfl&auml;che</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="./statistic.html"><img src="../images/statistic.png" title="Statistic" width="20" height="20"></a>&nbsp; <a href="./statistic.html">Statistik</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<?php 
+if ($scrolling=="on") {
+  echo "<a href=\"./scroller.html\"><img src=\"../images/scrolling.png\" title=\"Lauftext einrichten\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./scroller.html\">Lauftext</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+}
+?>
+
+<?php 
+if ($adminpw=="on") {
+  echo "<a href=\"./modifyadmin.html\"><img src=\"../images/admin.png\" title=\"Admin Passwort &auml;ndern\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./modifyadmin.html\">Passwort</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+}
+?>
+
+<?php 
+if ($youtubeadmin=="on") {
+  echo "<a href=\"./config.html\"><img src=\"../images/youtube.png\" title=\"Youtube Weiterleitung konfigurieren\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./config.html\">Youtube</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+}
+?>
+
+</div>
+
+<div class="content">
+
+<script src="js/jquery.js"></script>
+<script src="js/jquery.datetimepicker.full.js"></script>
+
+<form name="form1" action="aufnahme.html" method="get">
+<div class="inputs">
+
+<div>
+<div class="w3-responsive">
+<!-- table class="w3-table-all w3-small w3-hoverable w3-card-4 w3-left" border="1" -->
+<table border="0" align="left" cellpadding="1" cellspacing="1">
+
+<h5>Woechentliche Aufnahmen:</h5>
+
+<?php
+
+// Die Zeilen der Datei zeiten.txt in einen Array lesen
+$array = file("zeiten.txt");
+$zeile1 = $array[0];
+$zeile2 = $array[1];
+$zeile3 = $array[2];
+
+$zeile4 = $array[3];
+$zeile5 = $array[4];
+$zeile6 = $array[5];
+
+// Die einzelnen Werte der Zeilen 1-6 nach Trennzeichen splitten und in neuen Array lesen
+$arrzeile1 = explode("|", $zeile1);
+$arrzeile2 = explode("|", $zeile2);
+$arrzeile3 = explode("|", $zeile3);
+
+$arrzeile4 = explode("|", $zeile4);
+$arrzeile5 = explode("|", $zeile5);
+$arrzeile6 = explode("|", $zeile6);
+
+
+// Die Arrayinhalte der Zeilen 1-6 in einzelne Variablen uebernehmen
+$wochentagzeile1 = $arrzeile1[1];
+$wochentagzeile2 = $arrzeile2[1];
+$wochentagzeile3 = $arrzeile3[1];
+
+$wochenstundezeile1 = $arrzeile1[2];
+$wochenstundezeile2 = $arrzeile2[2];
+$wochenstundezeile3 = $arrzeile3[2];
+
+$wochenminutezeile1 = $arrzeile1[3];
+$wochenminutezeile2 = $arrzeile2[3];
+$wochenminutezeile3 = $arrzeile3[3];
+
+$tagzeile1 = $arrzeile4[1];
+$monatzeile1 = $arrzeile4[2];
+$jahrzeile1 = $arrzeile4[3];
+$stundezeile1 = $arrzeile4[4];
+$minutezeile1 = $arrzeile4[5];
+
+$tagzeile2 = $arrzeile5[1];
+$monatzeile2 = $arrzeile5[2];
+$jahrzeile2 = $arrzeile5[3];
+$stundezeile2 = $arrzeile5[4];
+$minutezeile2 = $arrzeile5[5];
+
+$tagzeile3 = $arrzeile6[1];
+$monatzeile3 = $arrzeile6[2];
+$jahrzeile3 = $arrzeile6[3];
+$stundezeile3 = $arrzeile6[4];
+$minutezeile3 = $arrzeile6[5];
+
+// ------ Erste Formularzeile ------
+echo "<tr><td> \n";
+  echo "<select class=\"field\" name=\"weekdayone\"> \n";
+   echo "<option value=\"null\">Wochentag auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"Jeden Sonntag\">Jeden Sonntag</option> \n";
+   echo "<option value=\"Jeden Montag\">Jeden Montag</option> \n";
+   echo "<option value=\"Jeden Dienstag\">Jeden Dienstag</option> \n";
+   echo "<option value=\"Jeden Mittwoch\">Jeden Mittwoch</option> \n";
+   echo "<option value=\"Jeden Donnerstag\">Jeden Donnerstag</option> \n";
+   echo "<option value=\"Jeden Freitag\">Jeden Freitag</option> \n";
+   echo "<option value=\"Jeden Samstag\">Jeden Samstag</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"weekhourone\"> \n";
+   echo "<option value=\"null\">Stunde auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"9\">9</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"11\">11</option> \n";
+   echo "<option value=\"12\">12</option> \n";
+   echo "<option value=\"13\">13</option> \n";
+   echo "<option value=\"14\">14</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"16\">16</option> \n";
+   echo "<option value=\"17\">17</option> \n";
+   echo "<option value=\"18\">18</option> \n";
+   echo "<option value=\"19\">19</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"21\">21</option> \n";
+   echo "<option value=\"22\">22</option> \n";
+   echo "<option value=\"23\">23</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"1\">1</option> \n";
+   echo "<option value=\"2\">2</option> \n";
+   echo "<option value=\"3\">3</option> \n";
+   echo "<option value=\"4\">4</option> \n";
+   echo "<option value=\"5\">5</option> \n";
+   echo "<option value=\"6\">6</option> \n";
+   echo "<option value=\"7\">7</option> \n";
+   echo "<option value=\"8\">8</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"weekminuteone\"> \n";
+   echo "<option value=\"null\">Minute auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"05\">05</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"25\">25</option> \n";
+   echo "<option value=\"30\">30</option> \n";
+   echo "<option value=\"35\">35</option> \n";
+   echo "<option value=\"40\">40</option> \n";
+   echo "<option value=\"45\">45</option> \n";
+   echo "<option value=\"50\">50</option> \n";
+   echo "<option value=\"55\">55</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr> \n";
+ echo "<tr><td> \n";
+  echo "<input type=\"text\" size=\"22\" value=\"" . $wochentagzeile1 . "\" readonly name=\"wochentagz1\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $wochenstundezeile1 . "\" readonly name=\"wochenstundez1\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $wochenminutezeile1 . "\" readonly name=\"wochenminutez1\"> \n";
+  //echo "<P> \n";
+echo "</td><td>&nbsp;</td></td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr> \n";
+echo "<tr height=\"8\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr> \n";
+
+// ------ Zweite Formularzeile ------
+echo "<tr><td> \n";
+  echo "<select class=\"field\" name=\"weekdaytwo\"> \n";
+   echo "<option value=\"null\">Wochentag auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"Jeden Sonntag\">Jeden Sonntag</option> \n";
+   echo "<option value=\"Jeden Montag\">Jeden Montag</option> \n";
+   echo "<option value=\"Jeden Dienstag\">Jeden Dienstag</option> \n";
+   echo "<option value=\"Jeden Mittwoch\">Jeden Mittwoch</option> \n";
+   echo "<option value=\"Jeden Donnerstag\">Jeden Donnerstag</option> \n";
+   echo "<option value=\"Jeden Freitag\">Jeden Freitag</option> \n";
+   echo "<option value=\"Jeden Samstag\">Jeden Samstag</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"weekhourtwo\"> \n";
+   echo "<option value=\"null\">Stunde auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"9\">9</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"11\">11</option> \n";
+   echo "<option value=\"12\">12</option> \n";
+   echo "<option value=\"13\">13</option> \n";
+   echo "<option value=\"14\">14</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"16\">16</option> \n";
+   echo "<option value=\"17\">17</option> \n";
+   echo "<option value=\"18\">18</option> \n";
+   echo "<option value=\"19\">19</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"21\">21</option> \n";
+   echo "<option value=\"22\">22</option> \n";
+   echo "<option value=\"23\">23</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"1\">1</option> \n";
+   echo "<option value=\"2\">2</option> \n";
+   echo "<option value=\"3\">3</option> \n";
+   echo "<option value=\"4\">4</option> \n";
+   echo "<option value=\"5\">5</option> \n";
+   echo "<option value=\"6\">6</option> \n";
+   echo "<option value=\"7\">7</option> \n";
+   echo "<option value=\"8\">8</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"weekminutetwo\"> \n";
+   echo "<option value=\"null\">Minute auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"05\">05</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"25\">25</option> \n";
+   echo "<option value=\"30\">30</option> \n";
+   echo "<option value=\"35\">35</option> \n";
+   echo "<option value=\"40\">40</option> \n";
+   echo "<option value=\"45\">45</option> \n";
+   echo "<option value=\"50\">50</option> \n";
+   echo "<option value=\"55\">55</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr> \n";
+ echo "<tr><td> \n";
+  echo "<input type=\"text\" size=\"22\" value=\"" . $wochentagzeile2 . "\" readonly name=\"wochentagz2\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $wochenstundezeile2 . "\" readonly name=\"wochenstundez2\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $wochenminutezeile2 . "\" readonly name=\"wochenminutez2\"> \n";
+  //echo "<P> \n";
+echo "</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr> \n";
+echo "<tr height=\"8\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr> \n";
+
+// ------ Dritte Formularzeile ------
+echo "<tr><td> \n";
+  echo "<select class=\"field\" name=\"weekdaythree\"> \n";
+   echo "<option value=\"null\">Wochentag auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"Jeden Sonntag\">Jeden Sonntag</option> \n";
+   echo "<option value=\"Jeden Montag\">Jeden Montag</option> \n";
+   echo "<option value=\"Jeden Dienstag\">Jeden Dienstag</option> \n";
+   echo "<option value=\"Jeden Mittwoch\">Jeden Mittwoch</option> \n";
+   echo "<option value=\"Jeden Donnerstag\">Jeden Donnerstag</option> \n";
+   echo "<option value=\"Jeden Freitag\">Jeden Freitag</option> \n";
+   echo "<option value=\"Jeden Samstag\">Jeden Samstag</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"weekhourthree\"> \n";
+   echo "<option value=\"null\">Stunde auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"9\">9</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"11\">11</option> \n";
+   echo "<option value=\"12\">12</option> \n";
+   echo "<option value=\"13\">13</option> \n";
+   echo "<option value=\"14\">14</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"16\">16</option> \n";
+   echo "<option value=\"17\">17</option> \n";
+   echo "<option value=\"18\">18</option> \n";
+   echo "<option value=\"19\">19</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"21\">21</option> \n";
+   echo "<option value=\"22\">22</option> \n";
+   echo "<option value=\"23\">23</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"1\">1</option> \n";
+   echo "<option value=\"2\">2</option> \n";
+   echo "<option value=\"3\">3</option> \n";
+   echo "<option value=\"4\">4</option> \n";
+   echo "<option value=\"5\">5</option> \n";
+   echo "<option value=\"6\">6</option> \n";
+   echo "<option value=\"7\">7</option> \n";
+   echo "<option value=\"8\">8</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"weekminutethree\"> \n";
+   echo "<option value=\"null\">Minute auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"05\">05</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"25\">25</option> \n";
+   echo "<option value=\"30\">30</option> \n";
+   echo "<option value=\"35\">35</option> \n";
+   echo "<option value=\"40\">40</option> \n";
+   echo "<option value=\"45\">45</option> \n";
+   echo "<option value=\"50\">50</option> \n";
+   echo "<option value=\"55\">55</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr> \n";
+ echo "<tr><td> \n";
+  echo "<input type=\"text\" size=\"22\" value=\"" . $wochentagzeile3 . "\" readonly name=\"wochentagz3\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $wochenstundezeile3 . "\" readonly name=\"wochenstundez3\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $wochenminutezeile3 . "\" readonly name=\"wochenminutez3\"> \n";
+  //echo "<P> \n";
+echo "</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr> \n";
+
+echo "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr> \n";
+echo "<tr><td colspan=\"9\"><H5>Individuelle Aufnahmen:</H5></td></tr> \n";
+  // ------ Zweiter Teil des Formulares -------  
+  //echo "<h5>Individuelle Aufnahmen</h3>";
+echo "<tr><td> \n";
+  echo "<select class=\"field\" name=\"dayone\"> \n";
+   echo "<option value=\"null\">Tag auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"1\">1</option> \n";
+   echo "<option value=\"2\">2</option> \n";
+   echo "<option value=\"3\">3</option> \n";
+   echo "<option value=\"4\">4</option> \n";
+   echo "<option value=\"5\">5</option> \n";
+   echo "<option value=\"6\">6</option> \n";
+   echo "<option value=\"7\">7</option> \n";
+   echo "<option value=\"8\">8</option> \n";
+   echo "<option value=\"9\">9</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"11\">11</option> \n";  
+   echo "<option value=\"12\">12</option> \n";
+   echo "<option value=\"13\">13</option> \n";
+   echo "<option value=\"14\">14</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"16\">16</option> \n";
+   echo "<option value=\"17\">17</option> \n";
+   echo "<option value=\"18\">18</option> \n";
+   echo "<option value=\"19\">19</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"21\">21</option> \n";
+   echo "<option value=\"22\">22</option> \n";
+   echo "<option value=\"23\">23</option> \n";
+   echo "<option value=\"24\">24</option> \n";
+   echo "<option value=\"25\">25</option> \n";
+   echo "<option value=\"26\">26</option> \n";
+   echo "<option value=\"21\">27</option> \n";
+   echo "<option value=\"28\">28</option> \n";
+   echo "<option value=\"29\">29</option> \n";
+   echo "<option value=\"30\">30</option> \n";
+   echo "<option value=\"31\">31</option> \n";
+echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"monthone\"> \n";
+   echo "<option value=\"null\">Monat auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"Januar\">Januar</option> \n";
+   echo "<option value=\"Febraur\">Februar</option> \n";
+   echo "<option value=\"Maerz\">Maerz</option> \n";
+   echo "<option value=\"April\">April</option> \n";
+   echo "<option value=\"Mai\">Mai</option> \n";
+   echo "<option value=\"Juni\">Juni</option> \n";
+   echo "<option value=\"Juli\">Juli</option> \n";
+   echo "<option value=\"August\">August</option> \n";
+   echo "<option value=\"September\">September</option> \n";
+   echo "<option value=\"Oktober\">Oktober</option> \n";
+   echo "<option value=\"November\">November</option> \n";
+   echo "<option value=\"Dezember\">Dezember</option> \n";
+  echo "</select> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"yearone\"> \n";
+   echo "<option value=\"null\">Jahr auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"2019\">2019</option> \n";
+   echo "<option value=\"2020\">2020</option> \n";
+   echo "<option value=\"2021\">2021</option> \n";
+   echo "<option value=\"2022\">2022</option> \n";
+   echo "<option value=\"2023\">2023</option> \n";
+   echo "<option value=\"2024\">2024</option> \n";
+   echo "<option value=\"2025\">2025</option> \n";
+   echo "<option value=\"2026\">2026</option> \n";
+   echo "<option value=\"2027\">2027</option> \n";
+   echo "<option value=\"2028\">2028</option> \n";
+   echo "<option value=\"2029\">2029</option> \n";
+   echo "<option value=\"2030\">2030</option> \n";
+  echo "</select> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"hourone\"> \n";
+   echo "<option value=\"null\">Stunde auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"9\">9</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"11\">11</option> \n";
+   echo "<option value=\"12\">12</option> \n";
+   echo "<option value=\"13\">13</option> \n";
+   echo "<option value=\"14\">14</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"16\">16</option> \n";
+   echo "<option value=\"17\">17</option> \n";
+   echo "<option value=\"18\">18</option> \n";
+   echo "<option value=\"19\">19</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"21\">21</option> \n";
+   echo "<option value=\"22\">22</option> \n";
+   echo "<option value=\"23\">23</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"1\">1</option> \n";
+   echo "<option value=\"2\">2</option> \n";
+   echo "<option value=\"3\">3</option> \n";
+   echo "<option value=\"4\">4</option> \n";
+   echo "<option value=\"5\">5</option> \n";
+   echo "<option value=\"6\">6</option> \n";
+   echo "<option value=\"7\">7</option> \n";
+   echo "<option value=\"8\">8</option> \n";
+  echo "</select> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"minuteone\"> \n";
+   echo "<option value=\"null\">Minute auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"05\">05</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"25\">25</option> \n";
+   echo "<option value=\"30\">30</option> \n";
+   echo "<option value=\"35\">35</option> \n";
+   echo "<option value=\"40\">40</option> \n";
+   echo "<option value=\"45\">45</option> \n";
+   echo "<option value=\"50\">50</option> \n";
+   echo "<option value=\"55\">55</option> \n";
+  echo "</select> \n";
+echo "</td></tr> \n";
+
+ echo "<tr><td> \n";
+  echo "<input type=\"text\" size=\"16\" value=\"" . $tagzeile1 . "\" readonly name=\"tagz1\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $monatzeile1 . "\" readonly name=\"monatz1\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"16\" value=\"" . $jahrzeile1 . "\" readonly name=\"jahrz1\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $stundezeile1 . "\" readonly name=\"stundez1\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $minutezeile1 . "\" readonly name=\"minutez1\"> \n";
+echo "</td></tr> \n"; 
+echo "<tr height=\"8\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr> \n";
+
+echo "<tr><td> \n";
+  echo "<select class=\"field\" name=\"daytwo\"> \n";
+   echo "<option value=\"null\">Tag auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"1\">1</option> \n";
+   echo "<option value=\"2\">2</option> \n";
+   echo "<option value=\"3\">3</option> \n";
+   echo "<option value=\"4\">4</option> \n";
+   echo "<option value=\"5\">5</option> \n";
+   echo "<option value=\"6\">6</option> \n";
+   echo "<option value=\"7\">7</option> \n";
+   echo "<option value=\"8\">8</option> \n";
+   echo "<option value=\"9\">9</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"11\">11</option> \n";  
+   echo "<option value=\"12\">12</option> \n";
+   echo "<option value=\"13\">13</option> \n";
+   echo "<option value=\"14\">14</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"16\">16</option> \n";
+   echo "<option value=\"17\">17</option> \n";
+   echo "<option value=\"18\">18</option> \n";
+   echo "<option value=\"19\">19</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"21\">21</option> \n";
+   echo "<option value=\"22\">22</option> \n";
+   echo "<option value=\"23\">23</option> \n";
+   echo "<option value=\"24\">24</option> \n";
+   echo "<option value=\"25\">25</option> \n";
+   echo "<option value=\"26\">26</option> \n";
+   echo "<option value=\"21\">27</option> \n";
+   echo "<option value=\"28\">28</option> \n";
+   echo "<option value=\"29\">29</option> \n";
+   echo "<option value=\"30\">30</option> \n";
+   echo "<option value=\"31\">31</option> \n";
+echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"monthtwo\"> \n";
+   echo "<option value=\"null\">Monat auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"Januar\">Januar</option> \n";
+   echo "<option value=\"Febraur\">Februar</option> \n";
+   echo "<option value=\"Maerz\">Maerz</option> \n";
+   echo "<option value=\"April\">April</option> \n";
+   echo "<option value=\"Mai\">Mai</option> \n";
+   echo "<option value=\"Juni\">Juni</option> \n";
+   echo "<option value=\"Juli\">Juli</option> \n";
+   echo "<option value=\"August\">August</option> \n";
+   echo "<option value=\"September\">September</option> \n";
+   echo "<option value=\"Oktober\">Oktober</option> \n";
+   echo "<option value=\"November\">November</option> \n";
+   echo "<option value=\"Dezember\">Dezember</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"yeartwo\"> \n";
+   echo "<option value=\"null\">Jahr auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"2019\">2019</option> \n";
+   echo "<option value=\"2020\">2020</option> \n";
+   echo "<option value=\"2021\">2021</option> \n";
+   echo "<option value=\"2022\">2022</option> \n";
+   echo "<option value=\"2023\">2023</option> \n";
+   echo "<option value=\"2024\">2024</option> \n";
+   echo "<option value=\"2025\">2025</option> \n";
+   echo "<option value=\"2026\">2026</option> \n";
+   echo "<option value=\"2027\">2027</option> \n";
+   echo "<option value=\"2028\">2028</option> \n";
+   echo "<option value=\"2029\">2029</option> \n";
+   echo "<option value=\"2030\">2030</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"hourtwo\"> \n";
+   echo "<option value=\"null\">Stunde auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"9\">9</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"11\">11</option> \n";
+   echo "<option value=\"12\">12</option> \n";
+   echo "<option value=\"13\">13</option> \n";
+   echo "<option value=\"14\">14</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"16\">16</option> \n";
+   echo "<option value=\"17\">17</option> \n";
+   echo "<option value=\"18\">18</option> \n";
+   echo "<option value=\"19\">19</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"21\">21</option> \n";
+   echo "<option value=\"22\">22</option> \n";
+   echo "<option value=\"23\">23</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"1\">1</option> \n";
+   echo "<option value=\"2\">2</option> \n";
+   echo "<option value=\"3\">3</option> \n";
+   echo "<option value=\"4\">4</option> \n";
+   echo "<option value=\"5\">5</option> \n";
+   echo "<option value=\"6\">6</option> \n";
+   echo "<option value=\"7\">7</option> \n";
+   echo "<option value=\"8\">8</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"minutetwo\"> \n";
+   echo "<option value=\"null\">Minute auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"05\">05</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"25\">25</option> \n";
+   echo "<option value=\"30\">30</option> \n";
+   echo "<option value=\"35\">35</option> \n";
+   echo "<option value=\"40\">40</option> \n";
+   echo "<option value=\"45\">45</option> \n";
+   echo "<option value=\"50\">50</option> \n";
+   echo "<option value=\"55\">55</option> \n";
+  echo "</select> \n";
+echo "</td></tr> \n";
+
+ echo "<tr><td> \n";
+  echo "<input type=\"text\" size=\"16\" value=\"" . $tagzeile2 . "\" readonly name=\"tagz2\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $monatzeile2 . "\" readonly name=\"monatz2\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"16\" value=\"" . $jahrzeile2 . "\" readonly name=\"jahrz2\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $stundezeile2 . "\" readonly name=\"stundez2\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $minutezeile2 . "\" readonly name=\"minutez2\"> \n";
+echo "</td></tr> \n"; 
+echo "<tr height=\"8\"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr> \n";
+
+echo "<tr><td> \n";
+  echo "<select class=\"field\" name=\"daythree\"> \n";
+   echo "<option value=\"null\">Tag auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"1\">1</option> \n";
+   echo "<option value=\"2\">2</option> \n";
+   echo "<option value=\"3\">3</option> \n";
+   echo "<option value=\"4\">4</option> \n";
+   echo "<option value=\"5\">5</option> \n";
+   echo "<option value=\"6\">6</option> \n";
+   echo "<option value=\"7\">7</option> \n";
+   echo "<option value=\"8\">8</option> \n";
+   echo "<option value=\"9\">9</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"11\">11</option> \n";  
+   echo "<option value=\"12\">12</option> \n";
+   echo "<option value=\"13\">13</option> \n";
+   echo "<option value=\"14\">14</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"16\">16</option> \n";
+   echo "<option value=\"17\">17</option> \n";
+   echo "<option value=\"18\">18</option> \n";
+   echo "<option value=\"19\">19</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"21\">21</option> \n";
+   echo "<option value=\"22\">22</option> \n";
+   echo "<option value=\"23\">23</option> \n";
+   echo "<option value=\"24\">24</option> \n";
+   echo "<option value=\"25\">25</option> \n";
+   echo "<option value=\"26\">26</option> \n";
+   echo "<option value=\"21\">27</option> \n";
+   echo "<option value=\"28\">28</option> \n";
+   echo "<option value=\"29\">29</option> \n";
+   echo "<option value=\"30\">30</option> \n";
+   echo "<option value=\"31\">31</option> \n";
+echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"monththree\"> \n";
+   echo "<option value=\"null\">Monat auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"Januar\">Januar</option> \n";
+   echo "<option value=\"Febraur\">Februar</option> \n";
+   echo "<option value=\"Maerz\">Maerz</option> \n";
+   echo "<option value=\"April\">April</option> \n";
+   echo "<option value=\"Mai\">Mai</option> \n";
+   echo "<option value=\"Juni\">Juni</option> \n";
+   echo "<option value=\"Juli\">Juli</option> \n";
+   echo "<option value=\"August\">August</option> \n";
+   echo "<option value=\"September\">September</option> \n";
+   echo "<option value=\"Oktober\">Oktober</option> \n";
+   echo "<option value=\"November\">November</option> \n";
+   echo "<option value=\"Dezember\">Dezember</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"yearthree\"> \n";
+   echo "<option value=\"null\">Jahr auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"2019\">2019</option> \n";
+   echo "<option value=\"2020\">2020</option> \n";
+   echo "<option value=\"2021\">2021</option> \n";
+   echo "<option value=\"2022\">2022</option> \n";
+   echo "<option value=\"2023\">2023</option> \n";
+   echo "<option value=\"2024\">2024</option> \n";
+   echo "<option value=\"2025\">2025</option> \n";
+   echo "<option value=\"2026\">2026</option> \n";
+   echo "<option value=\"2027\">2027</option> \n";
+   echo "<option value=\"2028\">2028</option> \n";
+   echo "<option value=\"2029\">2029</option> \n";
+   echo "<option value=\"2030\">2030</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"hourthree\"> \n";
+   echo "<option value=\"null\">Stunde auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"9\">9</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"11\">11</option> \n";
+   echo "<option value=\"12\">12</option> \n";
+   echo "<option value=\"13\">13</option> \n";
+   echo "<option value=\"14\">14</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"16\">16</option> \n";
+   echo "<option value=\"17\">17</option> \n";
+   echo "<option value=\"18\">18</option> \n";
+   echo "<option value=\"19\">19</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"21\">21</option> \n";
+   echo "<option value=\"22\">22</option> \n";
+   echo "<option value=\"23\">23</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"1\">1</option> \n";
+   echo "<option value=\"2\">2</option> \n";
+   echo "<option value=\"3\">3</option> \n";
+   echo "<option value=\"4\">4</option> \n";
+   echo "<option value=\"5\">5</option> \n";
+   echo "<option value=\"6\">6</option> \n";
+   echo "<option value=\"7\">7</option> \n";
+   echo "<option value=\"8\">8</option> \n";
+  echo "</select> \n";
+echo "</td><td>&nbsp;</td> \n";
+
+echo "<td> \n";
+  echo "<select class=\"field\" name=\"minutethree\"> \n";
+   echo "<option value=\"null\">Minute auswaehlen</option> \n";
+   echo "<option value=\" \">Loeschen</option> \n";
+   echo "<option value=\"0\">00</option> \n";
+   echo "<option value=\"05\">05</option> \n";
+   echo "<option value=\"10\">10</option> \n";
+   echo "<option value=\"15\">15</option> \n";
+   echo "<option value=\"20\">20</option> \n";
+   echo "<option value=\"25\">25</option> \n";
+   echo "<option value=\"30\">30</option> \n";
+   echo "<option value=\"35\">35</option> \n";
+   echo "<option value=\"40\">40</option> \n";
+   echo "<option value=\"45\">45</option> \n";
+   echo "<option value=\"50\">50</option> \n";
+   echo "<option value=\"55\">55</option> \n";
+  echo "</select> \n";
+echo "</td></tr> \n";
+
+ echo "<tr><td> \n";
+  echo "<input type=\"text\" size=\"16\" value=\"" . $tagzeile3 . "\" readonly name=\"tagz3\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $monatzeile3 . "\" readonly name=\"monatz3\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"16\" value=\"" . $jahrzeile3 . "\" readonly name=\"jahrz3\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $stundezeile3 . "\" readonly name=\"stundez3\"> \n";
+ echo "</td><td>&nbsp;</td> \n";
+ echo "<td> \n";
+  echo "<input type=\"text\" size=\"18\" value=\"" . $minutezeile3 . "\" readonly name=\"minutez3\"> \n";
+echo "</td></tr> \n"; 
+
+echo "</table> \n";
+// --------   Ende PHP ---------
+
+?>
+
+<!--input type="hidden" name="breaker[]" class="field" value=";" /-->
+    
+</div>
+</div>
+
+<P><input name="" type="Submit" class="submit" value="Speichern" />
+<!-- input form="form1" type="reset" -->
+</form>
+</div>
+
+<?php
+
+$wochentagz11 = $_GET['wochentagz1'];
+$wochenstundez11 = $_GET['wochenstundez1'];
+$wochenminutez11 = $_GET['wochenminutez1'];
+
+$wochentagz22 = $_GET['wochentagz2'];
+$wochenstundez22 = $_GET['wochenstundez2'];
+$wochenminutez22 = $_GET['wochenminutez2'];
+
+$wochentagz33 = $_GET['wochentagz3'];
+$wochenstundez33 = $_GET['wochenstundez3'];
+$wochenminutez33 = $_GET['wochenminutez3'];
+
+$tagz11 = $_GET['tagz1'];
+$monatz11 = $_GET['monatz1'];
+$jahrz11 = $_GET['jahrz1'];
+$stundez11 = $_GET['stundez1'];
+$minutez11 = $_GET['minutez1'];
+
+$tagz22 = $_GET['tagz2'];
+$monatz22 = $_GET['monatz2'];
+$jahrz22 = $_GET['jahrz2'];
+$stundez22 = $_GET['stundez2'];
+$minutez22 = $_GET['minutez2'];
+
+$tagz33 = $_GET['tagz3'];
+$monatz33 = $_GET['monatz3'];
+$jahrz33 = $_GET['jahrz3'];
+$stundez33 = $_GET['stundez3'];
+$minutez33 = $_GET['minutez3'];
+
+if ( $_GET['weekdayone'] <> "" )
+{
+   // und nun die Daten in eine Datei schreiben
+    // Datei wird zum Schreiben geöffnet
+    $handle = fopen ( "zeiten.txt", "w" );
+
+    // ----- Erste Zeile -----
+    fwrite ( $handle, "weekly" );
+    fwrite ( $handle, "|" );
+    if ($_GET['weekdayone'] == "null"):
+      fwrite ( $handle, $wochentagz11 );
+    else:
+      fwrite ( $handle, $_GET['weekdayone'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['weekhourone'] == "null"):
+      fwrite ( $handle, $wochenstundez11 );
+    else:
+      fwrite ( $handle, $_GET['weekhourone'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['weekminuteone'] == "null"):
+      fwrite ( $handle, $wochenminutez11 );
+    else:
+      fwrite ( $handle, $_GET['weekminuteone'] );
+    endif;
+    fwrite ( $handle, "|" );
+    fwrite( $handle, "\r\n");
+
+    // ----- Zweite Zeile -----
+    fwrite ( $handle, "weekly" );
+    fwrite ( $handle, "|" );
+    if ($_GET['weekdaytwo'] == "null"):
+      fwrite ( $handle, $wochentagz22 );
+    else:
+      fwrite ( $handle, $_GET['weekdaytwo'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['weekhourtwo'] == "null"):
+      fwrite ( $handle, $wochenstundez22 );
+    else:
+      fwrite ( $handle, $_GET['weekhourtwo'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['weekminutetwo'] == "null"):
+      fwrite ( $handle, $wochenminutez22 );
+    else:
+      fwrite ( $handle, $_GET['weekminutetwo'] );
+    endif;
+    fwrite ( $handle, "|" );
+    fwrite( $handle, "\r\n");
+
+    // ----- Dritte Zeile -----
+    fwrite ( $handle, "weekly" );
+    fwrite ( $handle, "|" );
+    if ($_GET['weekdaythree'] == "null"):
+      fwrite ( $handle, $wochentagz33 );
+    else:
+      fwrite ( $handle, $_GET['weekdaythree'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['weekhourthree'] == "null"):
+      fwrite ( $handle, $wochenstundez33 );
+    else:
+      fwrite ( $handle, $_GET['weekhourthree'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['weekminutethree'] == "null"):
+      fwrite ( $handle, $wochenminutez33 );
+    else:
+      fwrite ( $handle, $_GET['weekminutethree'] );
+    endif;
+    fwrite ( $handle, "|" );
+    fwrite( $handle, "\r\n");
+
+    // ----- Vierte Zeile -----
+    fwrite ( $handle, "individual" );
+    fwrite ( $handle, "|" );
+    if ($_GET['dayone'] == "null"):
+      fwrite ( $handle, $tagz11 );
+    else:
+      fwrite ( $handle, $_GET['dayone'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['monthone'] == "null"):
+      fwrite ( $handle, $monatz11 );
+    else:
+      fwrite ( $handle, $_GET['monthone'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['yearone'] == "null"):
+      fwrite ( $handle, $jahrz11 );
+    else:
+      fwrite ( $handle, $_GET['yearone'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['hourone'] == "null"):
+      fwrite ( $handle, $stundez11 );
+    else:
+      fwrite ( $handle, $_GET['hourone'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['minuteone'] == "null"):
+      fwrite ( $handle, $minutez11 );
+    else:
+      fwrite ( $handle, $_GET['minuteone'] );
+    endif;
+    fwrite( $handle, "\r\n");
+
+    // ----- Fuenfte Zeile -----
+    fwrite ( $handle, "individual" );
+    fwrite ( $handle, "|" );
+    if ($_GET['daytwo'] == "null"):
+      fwrite ( $handle, $tagz22 );
+    else:
+      fwrite ( $handle, $_GET['daytwo'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['monthtwo'] == "null"):
+      fwrite ( $handle, $monatz22 );
+    else:
+      fwrite ( $handle, $_GET['monthtwo'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['yeartwo'] == "null"):
+      fwrite ( $handle, $jahrz22 );
+    else:
+      fwrite ( $handle, $_GET['yeartwo'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['hourtwo'] == "null"):
+      fwrite ( $handle, $stundez22 );
+    else:
+      fwrite ( $handle, $_GET['hourtwo'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['minutetwo'] == "null"):
+      fwrite ( $handle, $minutez22 );
+    else:
+      fwrite ( $handle, $_GET['minutetwo'] );
+    endif;
+    fwrite( $handle, "\r\n");
+
+    // ----- Sechste Zeile -----
+    fwrite ( $handle, "individual" );
+    fwrite ( $handle, "|" );
+    if ($_GET['daythree'] == "null"):
+      fwrite ( $handle, $tagz33 );
+    else:
+      fwrite ( $handle, $_GET['daythree'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['monththree'] == "null"):
+      fwrite ( $handle, $monatz33 );
+    else:
+      fwrite ( $handle, $_GET['monththree'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['yearthree'] == "null"):
+      fwrite ( $handle, $jahrz33 );
+    else:
+      fwrite ( $handle, $_GET['yearthree'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['hourthree'] == "null"):
+      fwrite ( $handle, $stundez33 );
+    else:
+      fwrite ( $handle, $_GET['hourthree'] );
+    endif;
+    fwrite ( $handle, "|" );
+    if ($_GET['minutethree'] == "null"):
+      fwrite ( $handle, $minutez33 );
+    else:
+      fwrite ( $handle, $_GET['minutethree'] );
+    endif;
+    fwrite( $handle, "\r\n");
+
+    // Datei schließen
+    fclose ( $handle );
+    //sleep (1);
+    //echo "Danke - Ihre Daten wurden gespeichert";
+//header("Location: http://192.168.0.74/irgendingenadmin/aufnahme.html");
+echo "<meta http-equiv=\"refresh\" content=\"0; URL=".$modus."://".$server."/".$ort."admin/aufnahme.html\"> \n";
+    // Datei wird nicht weiter ausgeführt
+    exit;
+} 
+
+?>
+
+<div class="footer">
+  <!-- p>Footer</p -->
+</div>
+
+</body></html>

@@ -1,0 +1,112 @@
+<!-- Dieses Script zeigt den HLS Live Stream in einer HTML Seite mittels des flowplayers JS Videoplayers an. 
+Sofern der Browser der IE oder Edge ist, erfolgt eine Weiterleitung auf eine Hinweisseite. 
+-->
+
+<?php
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'aufztitel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+
+?>
+
+<!doctype html>
+
+<html>
+
+<head>
+   <meta charset="utf-8">
+
+   <title><?php echo $titel ?></title>
+   
+   <!-- optimize mobile versions -->
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+   <!-- Flowplayer skin -->
+   <link rel="stylesheet" href="../flowplayer/7.2.7/skin/skin.css">
+   
+   <!-- Flowplayer depends on jquery 1.7.2+ for video tag based installations -->
+   <script src="../flowplayer/tt/jquery-1.12.4.min.js"></script>
+   <!-- Flowplayer library -->
+   <script src="../flowplayer/7.2.7/flowplayer.min.js"></script>
+
+   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<style>
+#backgroundimage-poster {
+  background-image: url(./images/kirche-wait.jpg);
+
+}
+#backgroundcolor-poster {
+   background-color: #00abcd;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+</style>
+
+</head>
+
+<?php
+function get_browser_name($user_agent)
+{
+    if (strpos($user_agent, 'Opera') || strpos($user_agent, 'OPR/')) return 'Opera';
+    elseif (strpos($user_agent, 'Edge')) return 'Edge';
+    elseif (strpos($user_agent, 'Chrome')) return 'Chrome';
+    elseif (strpos($user_agent, 'Safari')) return 'Safari';
+    elseif (strpos($user_agent, 'Firefox')) return 'Firefox';
+    elseif (strpos($user_agent, 'MSIE') || strpos($user_agent, 'Trident/7')) return 'Internet Explorer';
+    
+    return 'Other';
+}
+
+$browser = get_browser_name($_SERVER['HTTP_USER_AGENT']);
+
+if ($browser=="Edge") {
+ header("Location: ".$modus."://".$server."/".$ort."/aufzeichnung-edge.html");
+}
+?>
+
+<body>
+
+   <div id="content">
+
+   <div class="header">
+   <h3><?php echo $aufztitel ?></h3>
+<div class="w3-panel w3-border-left w3-border-green w3-pale-green">
+Um den Ton einzuschalten klicken Sie bitte auf die Striche/Punkte in der rechten unteren Bildschirmh&auml;lfte.
+</div>
+
+<div data-ratio="0.4167" class="fp-slim flowplayer is-closeable"
+     data-poster="<?php echo $server."/".$ort."/images/kirche-wait.jpg" ?>"
+     data-title="poster option">
+
+   <video autoplay>
+
+   <source type="video/mp4" src="//<?php echo $server."/".$ort ?>streams/scrolling.mp4">
+   </video>
+
+</div>
+</body>
+</html>

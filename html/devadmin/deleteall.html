@@ -1,0 +1,95 @@
+<!-- Dieses Script loescht die uebergebene *.mp4 Datei und dazugehoerige *.flv Datei auf dem Server -->
+
+<?php 
+
+// Konfigurationsdatei fuer den Ort des mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$schnittfunktion=$obj->{'schnittfunktion'};
+$streamlocation=$obj->{'streamlocation'};
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Aufzeichnung wirklich l&ouml;schen?</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+/* Style the content */
+.content {
+    background-color: #ddd;
+    padding: 10px;
+    font-size:80%;
+}
+
+/* Style the footer */
+.footer {
+    background-color: #f1f1f1;
+    padding: 5px;
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="header">
+  <h3>Aufzeichnung wird gel&ouml;scht!</h3>
+</div>
+<div class="content">
+
+<?php
+
+#Pfade zu den Video Dateiordnern auf dem Server setzen
+$dateiimg_path="/video_recordings/".$ort."/*";
+$dateiimg_path_sm="/video_recordings/".$ort."/images/*";
+
+#Loeschen der Dateien
+if (exec ("nohup rm $dateiimg_path >>/dev/null 2>&1 &")) {
+  echo "<font color='red'>L&ouml;schen der Bilder fehlgeschlagen!</font><P>";
+}
+else {
+  echo "Bild erfolgreich gel&ouml;scht!<P>";
+}
+
+if (exec ("nohup rm $dateiimg_path_sm >>/dev/null 2>&1 &")) {
+  echo "<font color='red'>L&ouml;schen der Vorschaubilder fehlgeschlagen!</font><P>";
+}
+else {
+  echo "Vorschau Bilder erfolgreich gel&ouml;scht!<P>";
+}
+
+
+# Zurueck zur Uebersichtsseite
+echo "Sie werden automatisch zur &Uuml;bersichtsseite weitergeleitet...";
+echo '<meta http-equiv="refresh" content="2; url=index.php">';
+?>
+
+</div>
+
+</body>
+</html>

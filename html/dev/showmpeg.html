@@ -1,0 +1,132 @@
+<!-- Dieses Script gibt bestimmte Filme wieder. Dabei wird von index.php als Parameter der angeklickte mp4 Film wiedergegeben.
+Das Script wird aus der index.php aufgerufen.
+-->
+
+<?php 
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("../devadmin/config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+?>
+
+<!doctype html>
+
+<html>
+
+<head>
+   <meta charset="utf-8">
+
+   <title><?php echo $titel ?></title>
+   
+   <!-- optimize mobile versions -->
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+   <!-- Flowplayer skin -->
+   <link rel="stylesheet" href="../flowplayer/7.2.7/skin/skin.css">
+   
+   <!-- Flowplayer depends on jquery 1.7.2+ for video tag based installations -->
+   <script src="../flowplayer/tt/jquery-1.12.4.min.js"></script>
+   <!-- Flowplayer library -->
+   <script src="../flowplayer/7.2.7/flowplayer.min.js"></script>
+
+   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<style>
+#backgroundimage-poster {
+  background-image: url(./images/kirche-wait.jpg);
+}
+#backgroundcolor-poster {
+   background-color: #00abcd;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+</style>
+
+<!-- Start Open Web Analytics Tracker -->
+<script type="text/javascript">
+//<![CDATA[
+var owa_baseUrl = '<?php echo $modus."://".$server."/owa/" ?>';
+var owa_cmds = owa_cmds || [];
+owa_cmds.push(['setSiteId', '4d1e8fbaae713a5d0d2d2fd3f12b2eca']);
+owa_cmds.push(['trackPageView']);
+owa_cmds.push(['trackClicks']);
+
+(function() {
+	var _owa = document.createElement('script'); _owa.type = 'text/javascript'; _owa.async = true;
+	owa_baseUrl = ('https:' == document.location.protocol ? window.owa_baseSecUrl || owa_baseUrl.replace(/http:/, 'https:') : owa_baseUrl );
+	_owa.src = owa_baseUrl + 'modules/base/js/owa.tracker-combined-min.js';
+	var _owa_s = document.getElementsByTagName('script')[0]; _owa_s.parentNode.insertBefore(_owa, _owa_s);
+}());
+//]]>
+</script>
+<!-- End Open Web Analytics Code -->
+
+</head>
+
+<?php
+function get_browser_name($user_agent)
+{
+    if (strpos($user_agent, 'Opera') || strpos($user_agent, 'OPR/')) return 'Opera';
+    elseif (strpos($user_agent, 'Edge')) return 'Edge';
+    elseif (strpos($user_agent, 'Chrome')) return 'Chrome';
+    elseif (strpos($user_agent, 'Safari')) return 'Safari';
+    elseif (strpos($user_agent, 'Firefox')) return 'Firefox';
+    elseif (strpos($user_agent, 'MSIE') || strpos($user_agent, 'Trident/7')) return 'Internet Explorer';
+    
+    return 'Other';
+}
+
+$browser = get_browser_name($_SERVER['HTTP_USER_AGENT']);
+
+if ($browser=="Edge") {
+ header("Location: ".$modus."://".$server."/".$ort."/aufzeichnung-edge.html");
+}
+?>
+
+<?php include "./countermpeg.php"; ?>
+
+<body>
+
+   <div id="content">
+
+   <div class="header">
+   <h3><?php echo $titel ?></h3>
+
+<div class="w3-panel w3-border-left w3-border-green w3-pale-green">
+Um den Ton einzuschalten klicken Sie bitte auf die Striche/Punkte in der rechten unteren Bildschirmh&auml;lfte.
+</div>
+
+<div data-ratio="0.4167" class="fp-slim flowplayer is-closeable"
+     data-poster="<?php echo $server."/".$ort."/images/kirche-wait.jpg" ?>"
+     data-title="poster option">
+
+   <video autoplay>
+
+   <source type="video/mp4" src="//<?php echo $server."/".$ort ?>streams/<?php echo $_GET["filename"]; ?>">
+   </video>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!-- In this script you can configure the youtube configuration-->
+
+<?php
+// IMPORTANT: If there is a new variable in config.txt it has to be considered here also
+// Read the file contents into a string variable,
+// and parse the string into a data structure
+$str_data = file_get_contents("./config.txt");
+$data = json_decode($str_data,true);
+$comment=$data["comment"];
+$modus=$data["modus"];
+$ort=$data["ort"];
+$server=$data["server"];
+$titel=$data["titel"];
+$statitel=$data["statitel"];
+$aufztitel=$data["aufztitel"];
+$mpegtitel=$data["mpegtitel"];
+$aufzaudiotitel=$data["aufzaudiotitel"];
+$livetitel=$data["livetitel"];
+$liveaudiotitel=$data["liveaudiotitel"];
+$streamname=$data["streamname"];
+$streamkey=$data["streamkey"];
+$passwdcheck=$data["passwdcheck"];
+$password=$data["password"];
+$scheduler=$data["scheduler"];
+$schnittfunktion=$data["schnittfunktion"];
+$streamlocation=$data["streamlocation"];
+$scrolling=$data["scrolling"];
+$audiodownload=$data["audiodownload"];
+$audioaufzeichnung=$data["audioaufzeichnung"];
+$youtube=$data["youtube"];
+$youtubekey=$data["youtubekey"];
+$youtubeadmin=$data["youtubeadmin"];
+$adminpw=$data["adminpw"];
+$changename=$data["changename"];
+$videodownload=$data["videodownload"];
+$impressum=$data["impressum"];
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+       <head>
+<?
+// Browser Cache verhindern
+php session_cache_limiter('nocache');
+?>
+        <!-- meta http-equiv="refresh" content="120" / -->
+        <title>Einstellungen</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <style>
+        * {
+           box-sizing: border-box;
+        }
+
+        body {
+         margin: 0;
+        }
+
+        /* Style the header */
+        .header {
+            background-color: #f1f1f1;
+            padding: 10px;
+            font-size:100%;
+        }
+
+        /* Style the content */
+        .content {
+            background-color: #ddd;
+            padding: 10px;
+            font-size:80%;
+        }
+
+        /* Style the footer */
+        .footer {
+            background-color: #f1f1f1;
+            padding: 5px;
+        }
+        </style>
+       </head>
+       <body>
+        <div class="header">
+        <h2>Youtube Weiterleitung konfigurieren</h2>
+
+        <a href="../<?php echo $ort ?>admin/index.php"><img src="../images/home.png" title="Administrations-Oberfl&auml;che" width="25" height="25"></a>&nbsp;<a href="./index.php">Home</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="./statistic.html"><img src="../images/statistic.png" title="Statistic" width="20" height="20"></a>&nbsp; <a href="./statistic.html">Statistik</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <?php 
+          if ($scheduler=="on") {
+            echo "<a href=\"./aufnahme.html\"><img src=\"../images/calendar.png\" title=\"Aufzeichnung programmieren\" width=\"20\" height=\"20\"></a>&nbsp; <a href=\"./aufnahme.html\">Aufnahmen planen</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+          }
+        ?>
+
+        <?php 
+          if ($scrolling=="on") {
+            echo "<a href=\"./scroller.html\"><img src=\"../images/scrolling.png\" title=\"Lauftext einrichten\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./scroller.html\">Lauftext</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+          }
+        ?>
+
+        <?php 
+          if ($adminpw=="on") {
+            echo "<a href=\"./modifyadmin.html\"><img src=\"../images/admin.png\" title=\"Admin Passwort &auml;ndern\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./modifyadmin.html\">Passwort</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        }
+        ?>
+
+        </div>
+        <div class="content">
+
+<div class="w3-panel w3-border-left w3-border-red w3-pale-red">
+<b>WICHTIG: Bevor Sie die youtube Umleitung nutzen, lesen Sie bitte die <a href="./youtube.html" target="_new">folgenden Informationen</a> aufmerksam durch.</b><P>
+Eine youtube Umleitung muss von einem RK-Solutions Admin vorab serverseitig eingestellt werden, bevor dieses funktioniert!!!
+</div>
+
+<?php if(isset($Message)) { echo $Message; } ?>
+
+ <!-- form method="POST" -->
+  <form action="<?=$_SERVER['PHP_SELF']?>" method="post">
+  <?php
+    //$unique_id = uniqid(microtime(),1); 
+  ?>
+  <table border="0">
+   <tr>
+    <td><label>Youtube Weiterleitung:</td>
+    <td>
+         <select name="vyoutube" size="1">
+          <option value="on" <?php if ($youtube=="on") { echo "selected"; } ?>>on</option>
+          <option value="off" <?php if($youtube=="off") { echo "selected"; } ?>>off</option>
+         </select>
+        </label>
+    </td>
+   </tr>
+   <tr>
+    <td>Youtube Channel ID:</td>
+    <td><input type="text" name="vyoutubekey" size="40" maxLength="40" value="<?php echo $youtubekey ?>" /></td>
+   </tr>
+   <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+   </tr>
+   <tr>
+    <td><input type="submit" name="submit" value="&Uuml;bernehmen" /></td>
+    <td>&nbsp;</td>
+   </tr>
+  </table>
+ </form>
+
+</body>
+</html>
+
+<?php
+        if(isset($_POST['submit']))
+        {
+                $vyoutubekey = isset($_POST["vyoutubekey"]) ? strip_tags(trim($_POST["vyoutubekey"])) : ""; 
+                if(!empty($vyoutubekey))
+                {
+                   //$rpasswdcheck = $_POST['vpasswdcheck'];
+                   //$rpassword = $_POST['vpassword'];
+                   $ryoutube = $_POST['vyoutube'];
+                   $ryoutubekey = $_POST['vyoutubekey'];
+
+                   // config.txt Dateiinhalt zusammenbauen
+                   $newfilecontent = "{\n\"comment\":\"".$comment."\",\n\"modus\":\"".$modus."\",\n\"ort\":\"$ort\",\n\"server\":\"$server\",\n\"titel\":\"$titel\",
+\"statitel\":\"$statitel\",\n\"aufztitel\":\"$aufztitel\",\n\"mpegtitel\":\"$mpegtitel\",\n\"aufzaudiotitel\":\"$aufzaudiotitel\",
+\"livetitel\":\"$livetitel\",\n\"liveaudiotitel\":\"$liveaudiotitel\",\n\"streamname\":\"$streamname\",\n\"streamkey\":\"$streamkey\",
+\"passwdcheck\":\"$passwdcheck\",\n\"password\":\"$password\",\n\"scheduler\":\"$scheduler\",\n\"schnittfunktion\":\"$schnittfunktion\",
+\"streamlocation\":\"$streamlocation\",\n\"scrolling\":\"$scrolling\",\n\"audiodownload\":\"$audiodownload\",
+\"audioaufzeichnung\":\"$audioaufzeichnung\",\n\"youtube\":\"$ryoutube\",\n\"youtubekey\":\"$ryoutubekey\",\n\"youtubeadmin\":\"$youtubeadmin\",\n\"adminpw\":\"$adminpw\",\n\"changename\":\"$changename\",\n\"videodownload\":\"$videodownload\",\n\"impressum\":\"$impressum\"\n}\n";
+
+                   //echo "content: ".$newfilecontent;
+                   $fh = fopen("./config.txt", 'w')
+                     or die("Error opening output file");
+                   fwrite($fh, $newfilecontent);
+                   fclose($fh);
+                   
+                   echo"<div class=\"w3-panel w3-border-left w3-border-green w3-pale-green\">";
+                   echo "Die neuen Einstellungen wurden gespeichert.</div>";
+                   
+                   //echo "<br>ausfuehren";
+                   sleep(1);
+                   header('Location:'.$modus.'://'.$server.'/'.$ort.'admin/config.html');
+                   } else {
+                    echo"<div class=\"w3-panel w3-border-left w3-border-red w3-pale-red\">";
+                    echo "<p> Das Feld <b>Youtube Channel ID</> darf nicht leer sein!</p></div>";
+               }
+        }
+?>

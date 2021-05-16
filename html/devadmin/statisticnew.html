@@ -1,0 +1,141 @@
+<!-- Dieses Script gibt die tagesaktuelle Statistik aus -->
+
+<?php 
+
+//exec("/bin/bash /usr/local/nginx/html/rksutil/statistik/STARTSTAT.sh demo", $output, $retval);
+//sleep(2);
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$scheduler=$obj->{'scheduler'};
+$schnittfunktion=$obj->{'schnittfunktion'};
+$streamlocation=$obj->{'streamlocation'};
+$scrolling=$obj->{'scrolling'};
+$youtubeadmin=$obj->{'youtubeadmin'};
+$adminpw=$obj->{'adminpw'};
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+
+<?
+// Browser Cache verhindern
+php session_cache_limiter('nocache');
+?>
+
+<title>Tagesaktuelle Statistik</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<style>
+
+.csvTable{
+    font-size: 10pt;
+    border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    color: #777;
+}    
+
+.csvTable th{
+    text-align:left;
+    border-bottom: 1px solid #ccc;
+}
+
+.csvTable td{
+    border-bottom: 1px solid #ccc;
+}    
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 2;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+/* Style the content */
+.content {
+    background-color: #ddd;
+    padding: 10px;
+    font-size:80%;
+}
+
+/* Style the footer */
+.footer {
+    background-color: #f1f1f1;
+    padding: 5px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2><?php echo $titel ?></h2>
+  <h3>Tagesaktuelle Statistik </h3>
+
+<?php
+
+echo '<table  class="w3-table-all w3-small w3-hoverable w3-card-4 w3-centered" border="1" cellspacing="0" cellpadding="5" width="500">';
+echo '<tr><th>Datum</th><th>Wochentag</th><th>Aufrufe<br>Live &Uuml;bertragung</th><th>Aufrufe<br>Aufzeichnungen</th></tr>';
+
+$handle = fopen("../rksutil/statistik/".$ort."statletzte.txt", "r");
+$start = 0;
+
+while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) 
+{
+    sort($data);
+    echo '<tr>' . "\n";
+  
+  for ( $x = 0; $x < count($data); $x++)
+    {
+        $tagsAsArray = explode(' ', $data[$x]);
+//echo "tagsarray: ".$tagsAsArray."<br>";
+        $teile = explode("-", $tagsAsArray[0]);
+        $jahr=$teile[0];
+        $monat=$teile[1];
+        $tag=$teile[2];
+
+        echo '<td>'.$tag.'.'.$monat.'.'.$jahr.'</td>' . "\n";
+        $wochentage = array("Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag");
+        $zeit = strtotime($tagsAsArray[0]);
+        echo '<td>'.$wochentage[date("w", $zeit)].'</td>' . "\n";
+
+        echo '<td>'.$tagsAsArray[1].'</td>' . "\n";
+        echo '<td>'.$tagsAsArray[2].'</td>' . "\n";
+    }
+    
+    $start++;
+    
+    echo '</tr>' . "\n";
+    
+}
+
+fclose($handle);
+
+echo '</table>';
+
+?>
+
+</body>
+</html>

@@ -1,0 +1,168 @@
+<?php
+
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$modus=$obj->{'modus'};
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'aufztitel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$scheduler=$obj->{'scheduler'};
+$schnittfunktion=$obj->{'schnittfunktion'};
+$streamlocation=$obj->{'streamlocation'};
+$scrolling=$obj->{'scrolling'};
+$youtubeadmin=$obj->{'youtubeadmin'};
+$adminpw=$obj->{'adminpw'};
+
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+ <head>
+<?
+// Browser Cache verhindern
+php session_cache_limiter('nocache');
+?>
+        <!-- meta http-equiv="refresh" content="120" / -->
+        <title>Lauftext Konfiguration</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <style>
+        * {
+           box-sizing: border-box;
+        }
+
+        body {
+         margin: 0;
+        }
+
+        /* Style the header */
+        .header {
+            background-color: #f1f1f1;
+            padding: 10px;
+            font-size:100%;
+        }
+
+        /* Style the content */
+        .content {
+            background-color: #ddd;
+            padding: 10px;
+            font-size:80%;
+        }
+
+        /* Style the footer */
+        .footer {
+            background-color: #f1f1f1;
+            padding: 5px;
+        }
+        </style>
+
+        </head>
+	<body>
+
+
+        <div class="header">
+        <h2>Lauftext Konfiguration</h2>
+
+        <a href="../<?php echo $ort ?>admin/index.php"><img src="../images/home.png" title="Administrations-Oberfl&auml;che" width="25" height="25"></a>&nbsp;<a href="./index.php">Home</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="./statistic.html"><img src="../images/statistic.png" title="Statistic" width="20" height="20"></a>&nbsp; <a href="./statistic.html">Statistik</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <?php 
+          if ($scheduler=="on") {
+            echo "<a href=\"./aufnahme.html\"><img src=\"../images/calendar.png\" title=\"Aufzeichnung planen\" width=\"20\" height=\"20\"></a>&nbsp; <a href=\"./aufnahme.html\">Aufnahmen planen</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+          }
+        ?>
+
+        <?php
+         if ($youtubeadmin=="on") {
+            echo "<a href=\"./config.html\"><img src=\"../images/youtube.png\" title=\"Youtube Weiterleitung konfigurieren\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./config.html\">Youtube</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+         }
+        ?>
+
+        <?php 
+         if ($adminpw=="on") {
+            echo "<a href=\"./modifyadmin.html\"><img src=\"../images/admin.png\" title=\"Admin Passwort &auml;ndern\" width=\"22\" height=\"22\"></a>&nbsp; <a href=\"./modifyadmin.html\">Passwort</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        }
+        ?>
+
+        </div>
+
+        <div class="content">
+
+<div class="w3-panel w3-border-left w3-border-blue w3-pale-blue">
+Der hier eingegebene Text erscheint ausschliesslich an Bildschirmen, die mit dem <a href="https://rk-solutions-stream.de/gechingen/rksviewer.pdf" target="_new""><B>RKS-VIEWER</B></a> verbunden sind, sofern <B>KEINE</B> Livestream-&Uuml;bertragung stattfindet.<BR>
+<B>WICHTIG:</B> Der Text erscheint NICHT beim Streamen &uuml;ber einen Browser (z.B. am PC, Tablet od. Smartphone).
+</div>
+
+<?php if(isset($Message)) { echo $Message; } ?>
+<!-- form method="POST" -->
+<form name="herkunft" action="<?=$_SERVER['PHP_SELF']?>" method="post">
+
+<?php
+   $unique_id = uniqid(microtime(),1); 
+?>
+<table border="0">
+ <tr>
+  <td>Text:</td>
+  <?php
+     $textralf = file_get_contents('./scroller/text.txt');
+  ?>
+  <th><input type="text" id=scrolltext name="textcontent" size="100" maxLength="100" value="
+<?php 
+   if(isset($_POST["textcontent"]) && empty($_POST["textcontent"])) { 
+    echo "";
+   } elseif (empty($_POST["textcontent"]))
+   {
+     echo $textralf;
+   } else {
+      echo $_POST["textcontent"];
+    //echo "voll";
+   }
+?>"/>
+  <input type="hidden" name="unique_id" value="<?php echo $unique_id; ?>"></th>
+ </tr>
+ <tr>
+  <td></td>
+  <td><input type="submit" name="submit" value="&Uuml;bernehmen" /></td>
+ </tr>
+</table>
+</form>
+
+<p>Link auf das aktuelle <a href="./pre-scrolling.html" target="_new">Scrolling-Video</a></p>
+
+</body>
+</html>
+
+<?php
+        if(isset($_POST['submit']))
+        {
+                $scrolltext = $_POST['textcontent'];
+                if ($scrolltext == "") 
+                {
+                 $scrolltext = " ";
+                }
+                if(!empty($scrolltext) || ($scrolltext == " "))
+                {
+                        $handle = fopen ( "./scroller/text.txt", "w" );
+                        fwrite ( $handle, $scrolltext );
+
+                        fclose ( $handle );
+                        //System Call ausfuehren:
+                        echo"<div class=\"w3-panel w3-border-left w3-border-green w3-pale-green\">";
+                        $last_line = system("/bin/bash /usr/local/nginx/html/".$ort."admin/scroller/STARTSCROLLER.sh", $retval);
+                        //sleep(1);
+                        //header( 'Location: http://'.$server.'/'.$ort.'admin/scroller.html' ) ;
+                        
+                        echo "</div>";
+
+                  } 
+/*                } else {
+                        echo"<div class=\"w3-panel w3-border-left w3-border-red w3-pale-red\">";
+                        echo "<p>Bitte einen Text eingeben!</p></div>";
+                } */
+        }
+?>

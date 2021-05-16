@@ -1,0 +1,79 @@
+<!-- Dieses Script fragt nochmal nach, ob die Videos wirklich geloescht werden sollen -->
+
+<?php 
+// Konfigurationsdatei fuer den Ort des Mandanten auslesen und Variablen setzen
+$json=file_get_contents("./config.txt");
+$obj = json_decode($json);
+$ort=$obj->{'ort'};
+$server=$obj->{'server'};
+$titel=$obj->{'titel'};
+$streamname=$obj->{'streamname'};
+$streamkey=$obj->{'streamkey'};
+$passwdcheck=$obj->{'passwdcheck'};
+$passwd=$obj->{'password'};
+$scheduler=$obj->{'scheduler'};
+$schnittfunktion=$obj->{'schnittfunktion'};
+$streamlocation=$obj->{'streamlocation'};
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<title>Aufzeichnung wirklich l&ouml;schen?</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Style the header */
+.header {
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size:100%;
+}
+
+/* Style the content */
+.content {
+    background-color: #ddd;
+    padding: 10px;
+    font-size:80%;
+}
+
+/* Style the footer */
+.footer {
+    background-color: #f1f1f1;
+    padding: 5px;
+}
+</style>
+
+</head>
+
+<body>
+<div class="header">
+  <h3>Aufzeichnung l&ouml;schen?</h3>
+</div>
+<div class="content">
+<?php
+
+#Uebergebenen Dateinamen auslesen und .mp4 anhaengen
+$datei=$_GET["filename"];
+$dateimp4=$datei.".jpg";
+
+echo "Soll das Bild <b>" .$datei."</b> wirklich <b>unwiderbringlich</b> gel&ouml;scht werden?<P>
+<a href=\"../".$ort."/showmpeg.html?filename=".$dateimp4."\">Link zum Video</a><P>";
+
+echo "<a href=\"./delete.html?filename=".$datei."\">L&ouml;schen</a>";
+echo " | <a href=\"./index.php\">Abbrechen</a>"; 
+
+?>
+
+</div>
+</body>
+</html>
