@@ -82,7 +82,10 @@ Anschliessend im Browser Ergebniss checken.
 
 #### Favicons
 
-#### config.txt anpassen
+#### config.txt anpassen  
+sudo nano /var/www/html/devadmin/config.txt  
+Folgende Änderung vornehmen (je nach IP des Raspis im eigenerzeugten WLAN Netzwerk):  
+`"server":"192.168.4.1",`  
 
 ### Web-Frontend installieren  
 
@@ -91,6 +94,11 @@ https://intux.de/2019/12/eigenes-wlan-netzwerk-mit-dem-raspberry-pi-realisieren/
 
 ### Stromverbrauch optimieren (bei Akkubetrieb)  
 Anleitung siehe auch unter: (https://elektro.turanis.de/html/prj298/index.html)  
+Folgende Verbraucher wie in der Anleitung beschrieben optimieren:  
+* HDMI abschalten  
+* Interne LEDs abschalten  
+* Bluetooth abschalten  
+* Ethernet abschalten  
 
 ### Konfiguration der rc.local mit den Scripten die beim Systemstart automatisch gestartet werden  
 sudo nano /etc/rc.local  
