@@ -30,6 +30,7 @@ Jetzt im Verzeichnis für die Bilder dem user des Web Servers (www-data) entspre
 ### WLAN Hotspot einrichten
 
 ### Webserver installieren und konfigurieren (inkl. favicons)  
+Anleitung siehe auch unter: (https://pimylifeup.com/raspberry-pi-lighttpd/)  
 
 Den lighthttpd Webserver installieren:
 
