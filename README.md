@@ -66,7 +66,7 @@ fastcgi.server += ( ".php" =>
                 "broken-scriptfilename" => "enable"
         ))
 )
-'''  
+```  
 
 Lighthttpd neu starten:  
 sudo service lighttpd force-reload  
