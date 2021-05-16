@@ -94,6 +94,21 @@ Anleitung siehe auch unter: (https://elektro.turanis.de/html/prj298/index.html)
 ### Konfiguration der rc.local mit den Scripten die beim Systemstart automatisch gestartet werden  
 sudo nano /etc/rc.local  
 in /etc/rc.local folgende Eintragung vornehhmen:  
+```
+# Print the IP address
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
+fi
+
+iptables-restore < /etc/iptables.ipv4.nat
+/usr/bin/tvservice -o
+sudo ifconfig wlan0 down
+sudo /usr/bin/python /home/rarents/rrapps/camera3.py &
+sudo /usr/bin/python3 /home/rarents/rrapps/checkwlan.py &
+sudo /usr/bin/python3 /home/rarents/rrapps/reboot.py &
+exit 0
+```  
 
 
 
