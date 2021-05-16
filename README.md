@@ -33,7 +33,49 @@ Jetzt im Verzeichnis für die Bilder dem user des Web Servers (www-data) entspre
 
 Den lighthttpd Webserver installieren:
 
+`sudo apt-get update`  
+`sudo apt-get upgrade`  
+`sudo apt-get remove apache2`  
+`sudo apt-get install lighttpd` 
 
+Anschliessend Check über Browser ob der Webserver läuft:  
+`hostname -I`  
+Adresse im Browser eingeben. ie Startseite des lighthttpd sollte erscheinen  
+Hinwei: Die Webseiten liegen im Verzeichnis /var/www/html auf dem Pi.  
+
+Dann php installieren:  
+`sudo apt-get install php7.3-fpm php7.3-mbstring php7.3-mysql php7.3-curl php7.3-gd php7.3-curl php7.3-zip php7.3-xml -y`
+
+Lighthttpd konfigurieren:  
+`sudo lighttpd-enable-mod fastcgi`  
+`sudo lighttpd-enable-mod fastcgi-php`  
+
+PHP Konfiguration:  
+`sudo nano /etc/lighttpd/conf-available/15-fastcgi-php.conf` 
+
+Inhalt muss folgendermassen aussehen:  
+``
+# -*- depends: fastcgi -*-
+# /usr/share/doc/lighttpd/fastcgi.txt.gz
+# http://redmine.lighttpd.net/projects/lighttpd/wiki/Docs:ConfigurationOptions#mod_fastcgi-fastcgi
+
+## Start an FastCGI server for php (needs the php5-cgi package)
+fastcgi.server += ( ".php" =>
+        ((
+                "socket" => "/var/run/php/php7.3-fpm.sock",
+                "broken-scriptfilename" => "enable"
+        ))
+)
+
+Lighthttpd neu starten:  
+sudo service lighttpd force-reload  
+
+PHP testen indem eine Website erzeugt wird:  
+`sudo nano /var/www/html/index.php`  
+Folgendes einfügen:  
+`<?php phpinfo() ?>`  
+
+Anschliessend im Browser Ergebniss checken.  
 
 #### Favicons
 
