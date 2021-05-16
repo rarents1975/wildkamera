@@ -27,6 +27,10 @@ Als user pi auf der Console anmelden und folgende Befehle ausführen:
 Jetzt im Verzeichnis für die Bilder dem user des Web Servers (www-data) entsprechende Lese- und Schreibberechtigungen vergeben:  
 `sudo chwon -R www-data:www-data /video_recordings/dev` 
 
+### Realtime Clock konfigurieren:  
+Anleitung siehe auch unter: (https://delivery.shopifyapps.com/-/5ec669306e597ee9/97532a04d5640b8a)  
+
+
 ### WLAN Hotspot einrichten  
 Anleitung siehe auch unter: (https://intux.de/2019/12/eigenes-wlan-netzwerk-mit-dem-raspberry-pi-realisieren/)
 
@@ -82,7 +86,10 @@ Anschliessend im Browser Ergebniss checken.
 
 ### Web-Frontend installieren  
 
+Die Inhalte des Verzeichnisses (https://github.com/rarents1975/wildkamera/tree/main/html) auf dem Raspi in das Verzeichnis /var/www/ kopieren.  
 
+Dem Nutzer www-data Berechtigungen erteilen:  
+`sudo chown -R www-data:www-data /var/www/html` 
 
 config.txt anpassen:  
 sudo nano /var/www/html/devadmin/config.txt  
