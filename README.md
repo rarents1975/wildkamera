@@ -29,7 +29,11 @@ Jetzt im Verzeichnis für die Bilder dem user des Web Servers (www-data) entspre
 
 ### WLAN Hotspot einrichten
 
-### Webserver installieren und konfigurieren (inkl. favicons)
+### Webserver installieren und konfigurieren (inkl. favicons)  
+
+Den lighthttpd Webserver installieren:
+
+
 
 #### Favicons
 
