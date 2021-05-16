@@ -54,7 +54,7 @@ PHP Konfiguration:
 `sudo nano /etc/lighttpd/conf-available/15-fastcgi-php.conf` 
 
 Inhalt muss folgendermassen aussehen:  
-``
+```
 # -*- depends: fastcgi -*-
 # /usr/share/doc/lighttpd/fastcgi.txt.gz
 # http://redmine.lighttpd.net/projects/lighttpd/wiki/Docs:ConfigurationOptions#mod_fastcgi-fastcgi
@@ -66,6 +66,7 @@ fastcgi.server += ( ".php" =>
                 "broken-scriptfilename" => "enable"
         ))
 )
+'''  
 
 Lighthttpd neu starten:  
 sudo service lighttpd force-reload  
