@@ -1,6 +1,12 @@
 # Wildkamera
 Überwachungskamera auf Basis Raspberry Pi Zero. Die Kamera macht bei Bewegung alle 60 Sekunden ein Foto. Die Fotos werden auf der SD Karte des Raspberry Pi gespeichert und können über ein Web-Frontend z.B. über das Mobile Phone angeschaut u. auch wieder gelöscht werden. Dazu wird über einen Taster auf dem Raspberry Pi ein WLAN Hotspot erzeugt über den man sich z.B. mit dem Mobile Phone verbinden kann. 
 
+Die Wildkamera bietet die folgende Funktionailität:   
+* Bei Bewegung wird alle 60s ein Foto erstellt
+* Bei kurzem Klick auf den Taster erstellt die Kamera einen WLAN Hotspot. Die LED leuchtet dann. Auf diesen kann man sich dann mit dem Handy verbinden. Bei Eingabe von 192.168.4.1 im Browser werden einem die Bilder angezeigt.
+* Bilder können über das Browser-Frontend gelöscht werden  
+* Bei langem Klick auf den Taster wird der Raspberry Pi ausgeschaltet. Die LED beginnt dann zu flackern.  
+
 ![alt text](https://github.com/rarents1975/wildkamera/blob/main/gehaeuse.jpg)
 
 ## Hardware
