@@ -80,14 +80,14 @@ Folgendes einfügen:
 
 Anschliessend im Browser Ergebniss checken.  
 
-#### Favicons
+### Web-Frontend installieren  
 
-#### config.txt anpassen  
+
+
+config.txt anpassen:  
 sudo nano /var/www/html/devadmin/config.txt  
 Folgende Änderung vornehmen (je nach IP des Raspis im eigenerzeugten WLAN Netzwerk):  
 `"server":"192.168.4.1",`  
-
-### Web-Frontend installieren  
 
 ### Eigenes WLAN Netzwerk für den Raspberry Pi einrichten:  
 https://intux.de/2019/12/eigenes-wlan-netzwerk-mit-dem-raspberry-pi-realisieren/
