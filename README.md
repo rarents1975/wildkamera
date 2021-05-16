@@ -27,7 +27,8 @@ Als user pi auf der Console anmelden und folgende Befehle ausführen:
 Jetzt im Verzeichnis für die Bilder dem user des Web Servers (www-data) entsprechende Lese- und Schreibberechtigungen vergeben:  
 `sudo chwon -R www-data:www-data /video_recordings/dev` 
 
-### WLAN Hotspot einrichten
+### WLAN Hotspot einrichten  
+Anleitung siehe auch unter: (https://intux.de/2019/12/eigenes-wlan-netzwerk-mit-dem-raspberry-pi-realisieren/)
 
 ### Webserver installieren und konfigurieren (inkl. favicons)  
 Anleitung siehe auch unter: (https://pimylifeup.com/raspberry-pi-lighttpd/)  
